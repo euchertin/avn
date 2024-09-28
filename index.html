@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/index.css">
   <link rel="icon" type="image/x-icon" href="logo.svg">
 
+  <script type="text/javascript" src="https://vk.com/js/api/openapi.js?168"></script>
+
 </head>
 <body>
   <header>
@@ -50,6 +52,24 @@
       Наш проект создан для тех, кто интересуется политикой, дипломатией, военными действиями и экономикой. Здесь каждый участник может развить свои навыки и почувствовать себя лидером виртуальной страны.
     </p>
   </section>
+
+  <div class="vk-widget-container">
+    <div id="vk_groups"></div>
+  </div>
+  
+  <script type="text/javascript">
+    VK.Widgets.Group("vk_groups", {
+      mode: 4, 
+      wide: 1, 
+      color1: "1e1e1f", 
+      color2: "FFFFFF", 
+      color3: "5181B8", 
+      no_cover: 1,  /* Убираем обложку сообщества */
+      width: "auto",  /* Ширина виджета адаптивная */
+      height: 600  /* Высота виджета для отображения трех записей */,
+      margin: 0, 	1.25rem,
+    }, 201784905);
+  </script>
   
   <script src="js/index.js"></script>
 </body>
