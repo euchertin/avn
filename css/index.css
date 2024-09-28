@@ -158,3 +158,58 @@ header {
   max-width: 100%; /* Ширина не более 100% от родительского элемента */
   height: auto; /* Автоматическая высота для сохранения пропорций */
 }
+
+/* Анимация для плавного появления */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px); /* Начальная позиция немного ниже */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0); /* Конечная позиция на месте */
+  }
+}
+
+
+/* Стили для блока с текстом */
+.project-description {
+  float: left;
+  width: 80%;
+  padding: 20px;
+  margin: 30px 5%;
+  color: #fff;
+  background-color: #1e1e1f;
+  border-radius: 8px;
+  opacity: 0; /* Исходное состояние - невидимый */
+  animation: fadeIn 1s ease-in-out 0.5s forwards; /* Плавное появление */
+}
+
+.project-description h2 {
+  font-size: 35px;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.project-description p {
+  font-size: 23px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+  .project-description {
+    float: none;
+    width: 90%;
+    margin: 20px auto;
+  }
+
+  .project-description h2 {
+    font-size: 24px;
+  }
+
+  .project-description p {
+    font-size: 16px;
+  }
+}
