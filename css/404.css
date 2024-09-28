@@ -16,7 +16,7 @@
 }
 
 body {
-  font-family: 'Futura PT', sans-serif; /* Используем имя шрифта из @font-face */
+  font-family: 'Futura PT', sans-serif; 
   background-color: #141414;
   font-size: 23px;
   color: #fff;
