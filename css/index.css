@@ -1,0 +1,169 @@
+
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'FuturaPT Bold', sans-serif;
+  src: url('../fonts/FuturaPT-Bold.ttf') format('truetype');
+
+  background-color: #19191A;
+  color: #fff;
+}
+
+.container {
+  width: 90%;
+  margin: 0 auto;
+}
+
+header {
+  background: #222;
+  padding: 7px 0;
+}
+
+#navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  margin-right: 60px;
+}
+
+.nav-toggle {
+  display: none;
+}
+
+.nav-toggle span {
+  height: 3px;
+  width: 25px;
+  background: #fff;
+  margin-bottom: 4px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.nav-toggle.clicked span:nth-child(1) {
+  transform: rotate(45deg) translateY(8px);
+}
+
+.nav-toggle.clicked span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle.clicked span:nth-child(3) {
+  transform: rotate(-45deg) translateY(-8px);
+}
+
+.menu-links {
+  display: flex;
+  gap: 25px;
+  flex-grow: 1;
+}
+
+.menu-links a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s ease, border-bottom-color 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.menu-links a:hover {
+  color: #e9e9e9;
+  border-bottom-color: #e9e9e9;
+}
+
+.vk-link {
+  position: relative;
+  width: 30px;
+  height: 55px;
+  overflow: hidden;
+  transition: width 0.5s ease;
+}
+
+.vk-link:hover {
+  width: 150px;
+}
+
+.vk-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.vk-small {
+  width: 30px;
+  height: auto;
+  margin-top: 12px;
+}
+
+.vk-big {
+  width: 150px;
+  height: auto;
+  transform: translateX(-120px);
+  opacity: 0;
+  margin-top: 14px;
+}
+
+.vk-link:hover .vk-big {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.vk-link:hover .vk-small {
+  transform: translateX(120px);
+  opacity: 0;
+}
+
+/* Скрытие кнопки VK на мобильных устройствах */
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  .menu-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    background: #222; /* Цвет панели как у заголовка */
+    position: absolute;
+    top: 60px;
+    right: 0;
+    text-align: right; /* Выравнивание текста по правому краю */
+    padding: 20px;
+    border-left: 2px solid #fff;
+    opacity: 0; /* Начальное состояние скрытым */
+    pointer-events: none; /* Не реагировать на события мыши */
+    transition: opacity 0.3s ease; /* Плавное появление */
+  }
+
+  .menu-links.show {
+    display: flex;
+    opacity: 1; /* Появление при активации */
+    pointer-events: auto; /* Возврат к обработке событий */
+  }
+
+  .vk-link {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 25px;
+  }
+
+  .menu-links a {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+}

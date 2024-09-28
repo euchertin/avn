@@ -1,0 +1,109 @@
+
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+@font-face {
+  font-family: 'Futura PT';
+  src: url('../fonts/FuturaPT-Medium.ttf') format('truetype');
+  
+  font-style: normal;
+}
+
+body {
+  font-family: 'Futura PT', sans-serif; /* Используем имя шрифта из @font-face */
+  background-color: #141414;
+  font-size: 23px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  width: 100%;
+  background-color: #222;
+  padding: 15px 0;
+  position: absolute;
+  top: 0;
+}
+
+.container {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.logo {
+  margin-right: 60px;
+}
+
+.error404-page {
+    text-align: center;
+    padding: 20px;
+    margin-top: 100px; /* Отступ сверху, чтобы не перекрываться с меню */
+  }
+  
+  .error-message {
+    margin-bottom: 20px;
+  }
+  
+  .error-message h1 {
+    font-size: 9rem;
+    margin-bottom: 2rem;
+    opacity: 0;
+    transform: translateY(-50px);
+    animation: fadeIn 1s ease-out forwards;
+  }
+  
+  .error-message p {
+    font-size: 3rem;
+    opacity: 0;
+    transform: translateY(50px);
+    animation: fadeIn 1s ease-out forwards;
+    animation-delay: 0.5s;
+  }
+  
+  .error404-page a {
+    display: inline-block;
+    padding: 1rem 2rem;
+    color: #fff;
+    background-color: #424242;
+    text-decoration: none;
+    border-radius: 13px;
+    opacity: 0;
+    transform: translateY(50px);
+    animation: fadeIn 1s ease-out forwards;
+    animation-delay: 1s;
+  }
+  
+  /* Остальные стили */
+  
+
+.error404-page a:hover {
+  background-color: #5e5d5d;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
