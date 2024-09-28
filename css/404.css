@@ -58,7 +58,7 @@ header {
 .error404-page {
     text-align: center;
     padding: 20px;
-    margin-top: 100px; /* Отступ сверху, чтобы не перекрываться с меню */
+    margin-top: 100px; 
   }
   
   .error-message {
