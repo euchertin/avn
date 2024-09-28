@@ -113,7 +113,7 @@ header {
     opacity: 0; /* Начальное состояние скрытым */
     pointer-events: none; /* Не реагировать на события мыши */
     overflow: hidden; /* Скрывает содержимое при нулевой высоте */
-    transition: max-height 0.5s ease, opacity 0.5s ease; /* Плавное изменение высоты и прозрачности */
+    transition: max-height 0.2s ease, opacity 0.2s ease; /* Плавное изменение высоты и прозрачности */
     z-index: 10; /* Установить на передний план */
   }
 
