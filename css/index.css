@@ -40,7 +40,10 @@ header {
 
 .logo {
   margin-right: 60px;
-}
+    max-width: 4%; /* Логотип будет адаптироваться под размеры контейнера */
+    height: auto; /* Высота будет подстраиваться */
+  }
+  
 
 .nav-toggle {
   display: none;
