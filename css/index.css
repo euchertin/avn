@@ -4,20 +4,31 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'FuturaPT Bold', sans-serif;
-  background-color: #19191A;
-  color: #fff;
+@font-face {
+  font-family: 'Futura PT';
+  src: url('../fonts/FuturaPT-Medium.ttf') format('truetype');
+  
+  font-style: normal;
 }
+
+body {
+  font-family: 'Futura PT', sans-serif; 
+  background-color: #141414;
+  font-size: 23px;
+  color: #fff;
+  
+}
+
 
 .container {
   width: 90%;
   margin: 0 auto;
 }
 
+
 header {
   background: #222;
-  padding: 7px 0;
+  padding: 15px 0;
   position: relative; /* Добавлено для контекста позиционирования */
 }
 
