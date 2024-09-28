@@ -33,7 +33,13 @@
   </header>
   
   <section class="photo-section">
-    <img src="path/to/your/horizontal-photo.jpg" alt="" class="horizontal-photo">
+    <picture>
+      <!-- Для экранов шириной до 768px (мобильные устройства и планшеты) -->
+      <source media="(max-width: 768px)" srcset="images/photo2.png">
+      
+      <!-- Основное изображение для экранов больше 768px (десктопы) -->
+      <img src="images/photo.png" alt="Описание фото" class="horizontal-photo">
+    </picture>
   </section>
   
   <script src="js/index.js"></script>
