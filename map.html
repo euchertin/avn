@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карта | ООВГ]</title>
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/404.css">
+  <link rel="icon" type="image/x-icon" href="logo.svg">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  
+  
+ <style>
+    /* Стили для карты */
+    #map {
+      width: 100%;
+      height: 100%;
+      z-index: 0; /* Карта должна быть ниже остальных элементов */
+      position: relative;
+    }
+
+    /* Стили для навигационного меню */
+    header {
+      z-index: 1000; /* Меню должно быть выше карты */
+      
+    }
+
+    .leaflet-control-zoom {
+  position: fixed; /* Фиксированное позиционирование для привязки к экрану */
+  top: 50%; /* Располагаем по центру экрана по вертикали */
+  
+  transform: translateY(-50%); /* Центрируем элемент относительно его высоты */
+  z-index: 1000; /* Убедитесь, что контролы будут выше других элементов */
+}
+
+
+  </style>
+
+<style>
+    @media (max-width: 768px) and (orientation: landscape) {
+  footer {
+    display: none;
+  }
+}
+</style>
+
+  </style>
+
+  <style> 
+    .error-page-menu {
+      font-family: 'Futura PT', sans-serif; /* Используем имя шрифта из @font-face */
+    }
+  
+
+  </style>
+
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav id="navigation">
+        <img src="logo.svg" alt="Логотип сайта" class="logo", width="65px">
+        <a aria-label="mobile menu" class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </a>
+        <div class="menu-links error-page-menu main-menu">
+          <a href="#about">Главная</a>
+          <a href="#exp">Карта</a>
+          <a href="#skills">Страны</a>
+          <a href="#projects">Вики</a>
+          <a href="#contact">О нас</a>
+        </div>
+        <div class="vk-link">
+          <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50px"></a>
+        </div>
+
+        
+      </nav>
+    </div>
+
+  </header>
+  
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    // Создаем карту и устанавливаем начальный вид
+    
+    
+    var southWest = L.latLng(-85, -180), // Юго-западная точка (широта, долгота)
+        northEast = L.latLng(85, 180);   // Северо-восточная точка (широта, долгота)
+    var bounds = L.latLngBounds(southWest, northEast); // Создаем пределы
+
+    // Создаем карту с ограничениями по пределам и зуму
+    var map = L.map('map', {
+      maxBounds: bounds,          // Ограничение перемещения за пределы карты
+      maxBoundsViscosity: 1.0,    // Полное сопротивление при достижении пределов
+      minZoom: 2,                 // Минимальный уровень зума
+      maxZoom: 13,                // Максимальный уровень зума
+      zoomSnap: 1,                // Задаем шаг для зума (1 - стандартный)
+      zoomDelta: 1                // Шаг изменения зума при использовании кнопок
+    }).setView([20, 0], 3);       // Центральная точка (широта, долгота)
+
+
+    // Базовый слой океанов Esri
+    var Esri_OceanBasemap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri',
+      maxZoom: 13
+    }).addTo(map); // Добавляем на карту
+
+    map.setMaxBounds(bounds);
+  </script>
+
+
+  
+  <footer>
+    <div class="footer-logo">
+      <img src="logo.svg" alt="Логотип проекта">
+    </div>
+    <div class="footer-links">
+      <p>❗Проект не имеет никакой реальной политической силы и не ставит своей целью что-либо из политики. Он подчистую является выдумкой и поддерживается желающими этого людьми.</p>
+      <p>❗Мы выступаем в роли агрегатора новостей и предоставление реальной власти внутри группы, но не за её пределами. Мы не несём ответственность за всё, что будет происходить вне сообщества ВК и сайта.</p>
+    </div>
+    <div class="footer-socials">
+      <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK"></a>
+      <!-- Другие социальные иконки -->
+    </div>
+    <div class="footer-copy">
+      <p>© 2024 Евгений Чертин. Все права защищены.</p>
+    </div>
+  </footer>
+
+  <script src="js/index.js"></script>
+</body>
+</html>
