@@ -7,29 +7,25 @@
 @font-face {
   font-family: 'Futura PT';
   src: url('../fonts/FuturaPT-Medium.ttf') format('truetype');
-  
   font-style: normal;
 }
 
 body {
-  font-family: 'Futura PT', sans-serif; 
+  font-family: 'Futura PT', sans-serif;
   background-color: #141414;
   font-size: 23px;
   color: #fff;
-  
 }
-
 
 .container {
   width: 90%;
   margin: 0 auto;
 }
 
-
 header {
   background: #222;
   padding: 15px 0;
-  position: relative; /* Добавлено для контекста позиционирования */
+  position: relative;
 }
 
 #navigation {
@@ -40,9 +36,7 @@ header {
 
 .logo {
   margin-right: 60px;
-  
-  }
-  
+}
 
 .nav-toggle {
   display: none;
@@ -94,46 +88,45 @@ header {
 }
 
 .vk-logo {
-  transition: transform 0.3s ease; /* Плавный переход */
+  transition: transform 0.3s ease;
 }
 
 .vk-link:hover .vk-logo {
-  transform: scale(1.2); 
+  transform: scale(1.2);
 }
 
-/* Скрытие кнопки VK на мобильных устройствах */
+/* Мобильная адаптивность */
 @media (max-width: 768px) {
   .vk-link {
-    display: none; /* Скрывает логотип ВК */
+    display: none;
   }
 
   .nav-toggle {
-    display: flex; /* Показывает кнопку меню */
+    display: flex;
   }
 
   .menu-links {
-    display: flex; /* По умолчанию показываем меню */
     flex-direction: column;
     width: 100%;
-    background: #222; /* Цвет панели как у заголовка */
+    background: #222;
     position: absolute;
-    top: 80px; /* Положение меню относительно верхней границы */
+    top: 80px;
     right: 0;
-    text-align: right; /* Выравнивание текста по правому краю */
+    text-align: right;
     padding: 20px;
     border-left: 2px solid #fff;
-    max-height: 0; /* Начальная высота 0 для анимации */
-    opacity: 0; /* Начальное состояние скрытым */
-    pointer-events: none; /* Не реагировать на события мыши */
-    overflow: hidden; /* Скрывает содержимое при нулевой высоте */
-    transition: max-height 0.2s ease, opacity 0.2s ease; /* Плавное изменение высоты и прозрачности */
-    z-index: 10; /* Установить на передний план */
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: max-height 0.2s ease, opacity 0.2s ease;
+    z-index: 10;
   }
 
   .menu-links.show {
-    max-height: 500px; /* Максимальная высота для анимации (должна быть больше, чем высота меню) */
-    opacity: 1; /* Появление при активации */
-    pointer-events: auto; /* Возврат к обработке событий */
+    max-height: 500px;
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .nav-toggle {
@@ -152,27 +145,26 @@ header {
 }
 
 .photo-section {
-  text-align: center; /* Выравнивание по центру */
-  margin-top: 0px; /* Отступ сверху для визуального разделения */
+  text-align: center;
+  margin-top: 0px;
 }
 
 .horizontal-photo {
-  max-width: 100%; /* Ширина не более 100% от родительского элемента */
-  height: auto; /* Автоматическая высота для сохранения пропорций */
+  max-width: 100%;
+  height: auto;
 }
 
 /* Анимация для плавного появления */
 @keyframes fadeIn {
   0% {
     opacity: 0;
-    transform: translateY(20px); /* Начальная позиция немного ниже */
+    transform: translateY(20px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0); /* Конечная позиция на месте */
+    transform: translateY(0);
   }
 }
-
 
 /* Стили для блока с текстом */
 .project-description {
@@ -183,8 +175,8 @@ header {
   color: #fff;
   background-color: #1e1e1f;
   border-radius: 8px;
-  opacity: 0; /* Исходное состояние - невидимый */
-  animation: fadeIn 1s ease-in-out 0.5s forwards; /* Плавное появление */
+  opacity: 0;
+  animation: fadeIn 1s ease-in-out 0.5s forwards;
 }
 
 .project-description h2 {
@@ -199,7 +191,6 @@ header {
   margin-bottom: 15px;
 }
 
-/* Для мобильных устройств */
 @media (max-width: 768px) {
   .project-description {
     float: none;
@@ -214,43 +205,203 @@ header {
   .project-description p {
     font-size: 16px;
   }
-
-.vk-widget-container {
-  display: flex;
-  justify-content: center;  /* Центрируем виджет по горизонтали */
-  align-items: center;
-  width: 100%;  /* Контейнер занимает всю ширину */
-  padding: 20px 0;  /* Отступы сверху и снизу */
 }
 
-/* Контейнер для отступов внутри виджета */
+/* Контейнер для VK виджета */
+.vk-widget-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0;
+}
+
 .vk-widget-padding {
-  margin: 0 20px; /* Отступы слева и справа для виджета */
-  width: 100%; /* Контейнер занимает всю ширину */
-  max-width: 900px; /* Ограничиваем максимальную ширину */
-  box-sizing: border-box; /* Учитываем отступы в ширине */
+  margin: 0 20px;
+  width: 100%;
+  max-width: 900px;
+  box-sizing: border-box;
 }
 
 /* Стили для iframe внутри виджета */
 #vk_groups {
-  width: 100%; /* Виджет занимает всю ширину контейнера */
-  height: 600px;  /* Устанавливаем высоту для трёх крупных записей */
-  border: none; /* Убираем границы */
+  width: 100%;
+  height: 600px;
+  border: none;
 }
 
-/* Мобильная адаптивность */
+/* Мобильная адаптивность для VK виджета */
 @media (max-width: 768px) {
   #vk_groups {
-    height: 450px;  /* Уменьшаем высоту виджета на мобильных устройствах */
+    height: 450px;
   }
 }
 
 @media (max-width: 480px) {
   #vk_groups {
-    height: 350px;  /* Ещё меньше для узких экранов */
+    height: 350px;
   }
 }
 
-
-
+/* --- Стили для карусели преимуществ проекта с разделенными элементами --- */
+.carousel-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 40px auto;
+  overflow: hidden; /* Скрываем элементы, выходящие за пределы контейнера */
+  position: relative;
 }
+
+.carousel-inner {
+  display: flex;
+  gap: 20px; /* Добавляем промежутки между элементами */
+  transition: transform 0.5s ease-in-out;
+  width: calc(100%); /* Убираем дополнительное пространство */
+}
+
+.carousel-item {
+  flex: 0 0 calc(33.333% - 20px); /* Элементы занимают 33.333% ширины, учитывая промежутки */
+  padding: 20px;
+  text-align: center;
+  background-color: #1e1e1f;
+  border-radius: 8px;
+  color: #fff;
+  transition: opacity 0.5s ease;
+  box-sizing: border-box; /* Учитываем padding и margin */
+}
+
+/* Настройка для заголовков и абзацев */
+.carousel-item h3 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.carousel-item p {
+  font-size: 20px;
+}
+
+/* Кнопки переключения карусели */
+.carousel-prev, .carousel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 20px;
+}
+
+.carousel-prev {
+  left: 10px;
+}
+
+.carousel-next {
+  right: 10px;
+}
+
+/* Адаптивность для карусели */
+@media (max-width: 768px) {
+  .carousel-item {
+    flex: 0 0 calc(50% - 20px); /* Показываем 2 преимущества на среднем экране */
+  }
+
+  .carousel-item h3 {
+    font-size: 22px;
+  }
+
+  .carousel-item p {
+    font-size: 18px;
+  }
+
+  .carousel-prev, .carousel-next {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-item {
+    flex: 0 0 calc(100% - 20px); /* Показываем 1 преимущество на маленьком экране */
+  }
+
+  .carousel-item h3 {
+    font-size: 20px;
+  }
+
+  .carousel-item p {
+    font-size: 16px;
+  }
+
+  .carousel-prev, .carousel-next {
+    font-size: 16px;
+  }
+}
+
+.advantages-list {
+  list-style: none; /* Убираем стандартные маркеры */
+  padding-left: 0; /* Убираем отступ слева */
+  margin: 20px 0; /* Отступы сверху и снизу */
+}
+
+.advantages-list li {
+  margin-bottom: 10px; /* Отступ между пунктами списка */
+  font-size: 20px;
+  line-height: 1.6;
+}
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px; /* Отступ между каруселью и индикаторами */
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ccc; /* Цвет неактивных индикаторов */
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.indicator.active {
+  background-color: #000000; /* Цвет активного индикатора */
+}
+
+/* Контейнер для карусели */
+.carousel-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 40px auto;
+  overflow: hidden; /* Скрываем элементы, выходящие за пределы контейнера */
+  position: relative;
+  padding-left: 20px;  /* Добавляем отступ слева для мобильных */
+  padding-right: 10px; /* Добавляем отступ справа для мобильных */
+}
+
+/* Элементы карусели */
+.carousel-item {
+  flex: 0 0 calc(33.333% - 20px); /* Элементы занимают 33.333% ширины, учитывая промежутки */
+  padding: 20px;
+  text-align: center;
+  background-color: #1e1e1f;
+  border-radius: 8px;
+  color: #fff;
+  transition: opacity 0.5s ease;
+  box-sizing: border-box; /* Учитываем padding и margin */
+}
+
+/* Адаптивность для карусели */
+@media (max-width: 768px) {
+  .carousel-item {
+    flex: 0 0 calc(50% - 20px); /* Показываем 2 преимущества на среднем экране */
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-item {
+    flex: 0 0 calc(100% - 20px); /* Показываем 1 преимущество на маленьком экране */
+  }
+}
+
