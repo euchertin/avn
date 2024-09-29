@@ -302,6 +302,14 @@ header {
   right: 10px;
 }
 
+@media (min-width: 1024px) {
+  .carousel-prev, .carousel-next {
+    display: none;
+}
+}
+
+
+
 /* Адаптивность для карусели */
 @media (max-width: 768px) {
   .carousel-item {
@@ -405,4 +413,155 @@ header {
   }
 }
 
+.carousel-container {
+  margin-bottom: 20px; /* Отступ снизу для карусели */
+}
 
+.photo-blocks {
+  text-align: center; /* Центрируем текст и заголовок */
+  padding: 20px; /* Отступы для блока */
+}
+
+.photo-blocks-title {
+  font-size: 40px; /* Размер шрифта заголовка */
+  margin-bottom: 20px; /* Отступ снизу заголовка */
+}
+
+.photo-blocks-content {
+  display: flex; /* Используем Flexbox для центровки блоков */
+  justify-content: center; /* Центруем блоки по горизонтали */
+  gap: 50px; /* Отступ между блоками */
+}
+
+.photo-block {
+  background-color: #2a2a2a; /* Фоновый цвет блока, чуть светлее, чем остальной фон */
+  border-radius: 8px; /* Скругленные углы для блока */
+  padding: 15px; /* Отступы внутри блока */
+  width: 400px; /* Ширина блока */
+  text-align: center; /* Центрируем текст внутри блока */
+  transition: background-color 0.3s; /* Плавный переход при наведении */
+}
+
+.photo-block:hover {
+  background-color: #3a3a3a; /* Цвет фона при наведении */
+}
+
+.photo {
+  width: 100%; /* Изображение будет растягиваться по ширине блока */
+  height: auto; /* Соотношение сторон будет сохраняться */
+}
+
+.photo-text {
+  margin-top: 10px; /* Отступ сверху для текста под изображением */
+  font-size: 16px; /* Размер шрифта для описания */
+  color: #fff; /* Цвет текста */
+}
+
+ul {
+  list-style-type: none; /* Убираем маркеры */
+}
+
+.carousel-container {
+  text-align: center; 
+  padding: 20px; 
+}
+
+.carousel-title {
+  font-size: 40px; 
+  margin-bottom: 20px; 
+}
+
+.carousel-wrapper {
+  display: flex; 
+  justify-content: center; 
+  gap: 50px; 
+}
+
+.carousel-item {
+  background-color: #2a2a2a; 
+  border-radius: 8px; 
+  padding: 15px; 
+  width: 400px; 
+  text-align: center; 
+  transition: background-color 0.3s; 
+}
+
+.carousel-item:hover {
+  background-color: #3a3a3a; 
+}
+
+.carousel-image {
+  width: 100%; 
+  height: auto; 
+}
+
+.carousel-description {
+  margin-top: 10px; 
+  font-size: 16px; 
+  color: #fff; 
+}
+
+ul {
+  list-style-type: none; 
+}
+
+footer {
+  background-color: #0f0f0f; /* Темный фон */
+  color: #ecf0f1; /* Светлый текст */
+  padding: 20px; /* Отступы вокруг футера */
+  text-align: center; /* Центрируем текст */
+  display: flex; /* Используем флексбокс для горизонтального расположения */
+  flex-direction: row; /* Располагаем элементы в строку */
+  justify-content: space-between; /* Распределяем пространство между элементами */
+  align-items: center; /* Выравнивание по центру по вертикали */
+}
+
+.footer-logo img {
+  width: 100px; /* Размер логотипа */
+}
+
+.footer-links {
+  display: flex; /* Используем флексбокс для ссылки */
+  margin-bottom: 15px; /* Отступ снизу */
+}
+
+.footer-links p {
+  color: #ecf0f1; /* Цвет ссылок */
+  text-decoration: none; /* Убираем подчеркивание */
+  margin: 0 15px; /* Горизонтальные отступы между ссылками */
+  font-size: 20px;
+}
+
+.footer-links a:hover {
+  text-decoration: underline; /* Подчеркивание при наведении */
+}
+
+.footer-socials {
+  display: flex; /* Используем флексбокс для иконок социальных сетей */
+}
+
+.footer-socials img {
+  margin: 0 10px; /* Горизонтальные отступы между иконками */
+  width: 40px;
+  height: auto;
+  transition: transform 0.3s ease; /* Плавный переход для трансформации */
+}
+
+.footer-socials img:hover {
+  transform: scale(1.2); /* Увеличение при наведении */
+}
+
+.footer-copy {
+  font-size: 14px; /* Размер шрифта для копирайта */
+  margin-bottom: 7px; /* Отступ  для текста копирайта */
+  
+}
+
+@media (max-width: 768px) {
+  .footer {
+      flex-direction: column; /* Вертикальная компоновка для мобильных */
+  }
+  .footer-links {
+    display: none;
+  }
+}

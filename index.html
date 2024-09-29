@@ -6,15 +6,13 @@
   <title>Организация Объединённых Виртуальных Государств</title>
   <link rel="stylesheet" href="css/index.css">
   <link rel="icon" type="image/x-icon" href="logo.svg">
-
   <script type="text/javascript" src="https://vk.com/js/api/openapi.js?168"></script>
-
 </head>
 <body>
   <header>
     <div class="container">
       <nav id="navigation">
-        <img src="logo.svg" alt="Логотип сайта" class="logo", width="65px">
+        <img src="logo.svg" alt="Логотип сайта" class="logo" width="65px">
         <a aria-label="mobile menu" class="nav-toggle">
           <span></span>
           <span></span>
@@ -36,13 +34,11 @@
   
   <section class="photo-section">
     <picture>
-      <!-- Для экранов шириной до 768px (мобильные устройства и планшеты) -->
       <source media="(max-width: 768px)" srcset="images/photo2.png">
-      
-      <!-- Основное изображение для экранов больше 768px (десктопы) -->
       <img src="images/photo.png" alt="Описание фото" class="horizontal-photo">
     </picture>
   </section>
+  
   <section class="project-description">
     <h2>О проекте</h2>
     <p>
@@ -53,7 +49,7 @@
     </p>
   </section>
  
-  <div class="carousel-container">
+  <div class="carousel-container first-carousel">
     <div class="carousel-inner">
       <div class="carousel-item">
         <h3>ООВГ - это не просто игра, 🎮</h3>
@@ -98,14 +94,90 @@
       </div>
     </div>
 
+    <button class="carousel-prev" aria-label="Предыдущий слайд">&#10094;</button>
+    <button class="carousel-next" aria-label="Следующий слайд">&#10095;</button>
   
-    <button class="carousel-prev">&#10094;</button>
-    <button class="carousel-next">&#10095;</button>
-</div>
+    <div class="carousel-indicators"></div> <!-- Индикаторы первой карусели -->
+  </div>
 
-<div class="carousel-indicators"></div>
-
+  <div class="carousel-container second-carousel">
+    <h2 class="carousel-title">Последний конфликт — Великая война</h2>
+    <div class="carousel-inner">
+      <div id="1" class="carousel-item">
+        <img src="images/photo5.png" alt="Фото 1" class="carousel-image">
+        
+          <p class="carousel-description">
+          <ul>
+            <li>(клик)</li>
+            <li>Болгарское предательство</li>
+            <li>Эгейская резня</li>
+            <li>Вторая Битва за Британию разгорается</li>
+            <li>Застой на Западном фронте</li>
+            <li>Высадка в Нормандии</li>
+            <li>Вторая Германия</li>
+            <li>Гитлер мёртв!</li>
+            <li>Испанский фронт</li>
+          </ul>
+        </p>
+        
+      </div>
+      <div id="2" class="carousel-item">
+        <img src="images/photo3.png" alt="Фото 2" class="carousel-image">
+        <p class="carousel-description">
+          <ul>
+            <li>(клик)</li>
+            <li>Кипрская операция</li>
+            <li>Албанский прорыв</li>
+            <li>"Болгарский перец"</li>
+            <li>Вторая Битва за Британию</li>
+            <li>Мясорубка на Западном Фронте</li>
+            <li>Великая Швейцария</li>
+            <li>Испанский застой</li>
+            <li>Алжирский фейерверк</li>
+          </ul>
+        </p>
+      </div>
+      <div id="3" class="carousel-item">
+        <img src="images/photo4.png" alt="Фото 3" class="carousel-image">
+        <p class="carousel-description">
+          <ul>
+            <li>(клик)</li>
+            <li>Конец первой битвы за Британию</li>
+            <li>На Западном фронте...</li>
+            <li>Немцы как всегда</li>
+            <li>На южном фронте без перемен</li>
+            <li>Операция "Ромея"</li>
+            <li>Семитов обокрали!</li>
+            <li>Три высадки в Алжир</li>
+          </ul>
+        </p>
+      </div>
+    </div>
   
+    <button class="carousel-prev" aria-label="Предыдущий слайд">&#10094;</button>
+    <button class="carousel-next" aria-label="Следующий слайд">&#10095;</button>
+    
+    <div class="carousel-indicators"></div> <!-- Индикаторы второй карусели -->
+  </div>
+
+  <footer>
+    <div class="footer-logo">
+      <img src="logo.svg" alt="Логотип проекта">
+    </div>
+    <div class="footer-links">
+      <p>❗Проект не имеет никакой реальной политической силы и не ставит своей целью что-либо из политики. Он подчистую является выдумкой и поддерживается желающими этого людьми.</p>
+      <p>❗Мы выступаем в роли агрегатора новостей и предоставление реальной власти внутри группы, но не за её пределами. Мы не несём ответственность за всё, что будет происходить вне сообщества ВК и сайта.</p>
+    </div>
+    <div class="footer-socials">
+      <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK"></a>
+      <!-- Другие социальные иконки -->
+    </div>
+    <div class="footer-copy">
+      <p>© 2024 Евгений Чертин. Все права защищены.</p>
+    </div>
+  </footer>
+
   <script src="js/index.js"></script>
 </body>
 </html>
+
