@@ -60,6 +60,11 @@ header {
     padding: 20px;
     margin-top: 100px; 
   }
+
+body {
+    display: flex; /* Используем flexbox для вертикального выравнивания */
+    flex-direction: column; /* Размещаем элементы вертикально */
+}
   
   .error-message {
     margin-bottom: 20px;
@@ -110,4 +115,11 @@ header {
 
 .hidden {
   display: none;
+}
+.error404-page {
+  flex: 1; /* Заставляем основной контент занимать доступное пространство */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Выравнивание контента по центру */
+  align-items: center; /* Выравнивание по центру по горизонтали */
 }
