@@ -1,3 +1,9 @@
+
+document.querySelector('.nav-toggle').addEventListener('click', function() {
+  this.classList.toggle('clicked');
+  document.querySelector('.menu-links').classList.toggle('show');
+});
+
 const carouselItems = document.querySelectorAll('.carousel-item');
 const carouselInner = document.querySelector('.carousel-inner');
 const indicatorsContainer = document.querySelector('.carousel-indicators');
@@ -40,11 +46,26 @@ function goToSlide(index) {
   // Обновляем текущий индекс
   currentIndex = (index + totalSlides) % totalSlides; // Зацикливаем индекс
 
-  // Вычисляем смещение для карусели
+  // Устанавливаем прозрачность элементов
+  carouselItems.forEach((item, idx) => {
+    if (idx >= currentIndex * itemsPerView && idx < currentIndex * itemsPerView + itemsPerView) {
+      item.style.opacity = 0; // Убираем видимость перед переходом
+    }
+  });
+
+  // Применяем смещение для карусели
   const offset = -currentIndex * itemsPerView * (100 / itemsPerView);
   carouselInner.style.transform = `translateX(${offset}%)`;
 
-  updateIndicators(); // Обновляем индикаторы
+  // После установки смещения, показываем элементы плавно
+  setTimeout(() => {
+    carouselItems.forEach((item, idx) => {
+      if (idx >= currentIndex * itemsPerView && idx < currentIndex * itemsPerView + itemsPerView) {
+        item.style.opacity = 1; // Восстанавливаем видимость
+        item.style.transition = 'opacity 3.5s'; // Устанавливаем плавный переход
+      }
+    });
+  }, 100); // Небольшая задержка для плавного появления
 }
 
 // Функция для переключения на следующий набор слайдов
