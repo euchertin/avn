@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="css/index.css">
   <link rel="icon" type="image/x-icon" href="logo.svg">
   <script type="text/javascript" src="https://vk.com/js/api/openapi.js?168"></script>
+  <script src="https://vk.com/js/api/openapi.js?169" type="text/javascript"></script>
+
+
+  <script
+  type="text/javascript"
+  src="https://vk.com/js/api/openapi.js?168"
+  charset="windows-1251"
+></script>
+
 </head>
 <body>
   <header>
@@ -154,12 +163,21 @@
       </div>
     </div>
   
-    <button class="carousel-prev" aria-label="Предыдущий слайд">&#10094;</button>
-    <button class="carousel-next" aria-label="Следующий слайд">&#10095;</button>
+    <button class="carousel-prev carousel-prev1" aria-label="Предыдущий слайд">&#10094;</button>
+    <button class="carousel-next carousel-next1" aria-label="Следующий слайд">&#10095;</button>
     
     <div class="carousel-indicators"></div> <!-- Индикаторы второй карусели -->
   </div>
 
+  <div class="standarts-container">
+    <h2 class="carousel-title">Стандарты ведения войны в ООВГ</h2>
+  </div>
+  <div id="vk_article_-201784905_205400" class="standarts-widget"></div>
+<script type="text/javascript">
+  VK.Widgets.Article("vk_article_-201784905_205400", "@vgovernments-standart-vedeniya-voiny");
+</script>
+
+<div id="vk_community_messages"></div>
   <footer>
     <div class="footer-logo">
       <img src="logo.svg" alt="Логотип проекта">
@@ -176,7 +194,10 @@
       <p>© 2024 Евгений Чертин. Все права защищены.</p>
     </div>
   </footer>
-
+  <script type="text/javascript">
+    VK.Widgets.CommunityMessages("vk_community_messages", 20003922);
+    </script>
+  
   <script src="js/index.js"></script>
 </body>
 </html>

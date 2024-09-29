@@ -303,7 +303,7 @@ header {
 }
 
 @media (min-width: 1024px) {
-  .carousel-prev, .carousel-next {
+  .carousel-prev1, .carousel-next1 {
     display: none;
 }
 }
@@ -564,4 +564,16 @@ footer {
   .footer-links {
     display: none;
   }
+}
+
+.standarts-container {
+  text-align: center;
+}
+
+.standarts-widget {
+  max-width: 600px;  /* Максимальная ширина виджета */
+  margin: 0 auto;    /* Центрирование виджета по горизонтали */
+  position: relative; /* Позволяет детям позиционироваться относительно него */
+  height: 100%;      /* Высота для родительского элемента */
+  margin-bottom: 100px;
 }
