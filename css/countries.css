@@ -1,0 +1,312 @@
+/* Общие стили */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'Aldrich-Regular';
+  src: url('../fonts/Aldrich-Regular.ttf') format('truetype');
+  font-style: normal;
+}
+
+body, html {
+  font-family: 'Aldrich-Regular', sans-serif;
+  font-size: 23px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Фиксированное меню */
+header {
+  width: 100%;
+  padding: 15px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  font-family: 'Aldrich-Regular', sans-serif;
+}
+
+.container {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.logo {
+  margin-right: 60px;
+}
+
+/* Контейнер для главного контента */
+.main-content {
+  margin-top: 80px;
+  overflow-y: auto;
+  height: calc(100vh - 80px);
+  padding: 20px;
+}
+
+/* Стили для поиска */
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  
+}
+
+.search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-input {
+  padding: 10px 40px 10px 20px;
+  border-radius: 15px;
+  border: 1px solid #444;
+  width: 100%;
+  background-color: #333;
+  color: #fff;
+  font-size: 17px;
+  font-family: 'Aldrich-Regular', sans-serif;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.search-button {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.search-button img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.search-button:hover img {
+  opacity: 1;
+}
+
+.details-button {
+  background-color: #707070;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 20px;
+  font-family: 'Aldrich-Regular', sans-serif;
+  margin-top: 10px;
+}
+
+.details-button:hover {
+  background-color: #999999;
+}
+
+/* Контейнер с странами */
+.country-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+  padding-top: 100px;
+  padding-bottom: 50px;
+}
+
+/* Блоки стран */
+.country-block {
+  display: flex;
+  background-color: #222;
+  border-radius: 30px;
+  width: 100%;
+  max-width: 1000px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards;
+  flex-shrink: 0;
+}
+
+.country-flag {
+  background-color: #333;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.country-text {
+  flex: 1;
+  color: #fff;
+  padding: 20px;
+  background-color: #222;
+  border-left: 1px solid #444;
+  font-family: 'Aldrich-Regular', sans-serif;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+  .country-block {
+    flex-direction: column;
+  }
+
+  .country-flag, .country-text {
+    width: 100%;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .search-input {
+    font-size: 16px;
+    padding: 8px 20px;
+  }
+
+  .details-button {
+    font-size: 18px;
+  }
+}
+
+/* Футер */
+footer {
+  background-color: #222;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  bottom: 0;
+  margin-top: 20px;
+}
+
+footer:after {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background-color: #333;
+}
+
+/* Скрытие */
+.hidden {
+  display: none;
+}
+/* Основной CSS уже включён, изменения начинаются ниже */
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  body, html {
+    font-size: 18px;
+    padding: 0 10px;
+  }
+
+  header {
+    padding: 10px 0;
+  }
+
+  .container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .logo {
+    margin-right: 0;
+  }
+
+  .main-content {
+    margin-top: 70px;
+    padding: 10px;
+  }
+
+  .search-container {
+    margin: 10px 0;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+
+  .search-input {
+    font-size: 15px;
+    padding: 8px 38px 8px 15px;
+    border-radius: 12px;
+  }
+
+  .search-button img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .details-button {
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    margin-top: 8px;
+  }
+
+  .country-list {
+    gap: 15px;
+  }
+
+  .country-block {
+    flex-direction: column;
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .country-flag, .country-text {
+    padding: 10px;
+    border-left: none;
+  }
+
+  .country-flag {
+    margin-bottom: 10px;
+  }
+
+  
+}
+
+footer {
+  
+  margin-top: auto; /* Отталкивает футер вниз */
+}
+

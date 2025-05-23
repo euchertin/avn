@@ -111,3 +111,10 @@ document.getElementById("2").onclick = function() {
 document.getElementById("1").onclick = function() {
   window.open("https://vk.com/wall-201784905_1926", "_blank"); 
 }; 
+
+const menuLinks = document.querySelector('.menu-links');
+if (menuLinks) {
+  menuLinks.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+}
