@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="css/index.css" />
+<link rel="stylesheet" href="css/map.css" />
+<title>Время | ООВГ</title>
+<style>
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 0.4em;
+    color: #395e53;
+    text-align: center;
+  }
+  #noise-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 110;
+      background: url('/images/effect.gif') repeat;
+      /* Гарантируем работу GIF */
+      image-rendering: pixelated;
+      /* Анимация для принудительного обновления гифки */
+      animation: noise-animation 0.5s infinite;
+    }
+    
+    /* Анимация для гарантии работы GIF */
+    @keyframes noise-animation {
+      0% { opacity: 0.11; }
+      50% { opacity: 0.12; }
+      100% { opacity: 0.11; }
+    }
+
+  #time {
+    font-size: 40px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.15);
+    padding: 0.8em 1.5em;
+    border-radius: 16px;
+    font-family: 'Courier New', Courier, monospace;
+   
+    color: #395e53;
+    max-width: 380px;
+    margin: 0 auto;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(57,94,83,0.5);
+    user-select: none;
+  }
+
+  #info {
+    margin-top: 1.2em;
+    font-size: 1rem;
+    opacity: 0.7;
+    color: #395e53;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    line-height: 1.4;
+    user-select: none;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: flex-start;
+    background-color: #141414;
+    color: #395e53;
+    font-family: 'Aldrich-Regular', sans-serif;
+    font-size: 23px;
+    padding: 40px 20px;
+  }
+
+  .static-noise {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    
+    
+  }
+
+  main {
+    padding-top: 80px; /* Отступ под фиксированный хедер */
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 2.2rem;
+    }
+
+    #time {
+      font-size: 2rem;
+      max-width: 280px;
+      padding: 0.6em 1em;
+      letter-spacing: 2px;
+    }
+
+    #info {
+      font-size: 0.9rem;
+      max-width: 280px;
+      margin-top: 1em;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="static-noise"></div>
+      <div id="noise-overlay"></div>
+  <header>
+    <div class="container">
+      <nav id="navigation">
+        <img src="logo.svg" alt="Логотип сайта" class="logo" width="65" />
+        <a aria-label="mobile menu" class="nav-toggle">
+          <span></span><span></span><span></span>
+        </a>
+        <div class="menu-links menu">
+          <a href="index.html">Главная</a>
+          <a href="map.html">Карта</a>
+          <a href="countries.html">Страны</a>
+          <a href="reg.html">Вступить</a>
+          <a href="time.html">Время</a>
+        </div>
+        <div class="vk-link">
+          <a href="https://vk.com/vgovernments">
+            <img src="images/vk1.svg" alt="VK" class="vk-logo vk-small" width="50" />
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Ускоренное время</h1>
+    <div id="time">Загрузка...</div>
+    <div id="info">
+      Начало отсчёта: 1 декабря 1954 00:00:00<br />
+      Ускорение: x30
+    </div>
+  </main>
+
+  <script>
+    const startDate = new Date('1954-12-01T00:00:00Z').getTime();
+    const realStart = Date.now();
+    const speed = 30;
+    const timeElem = document.getElementById('time');
+
+    function updateTime() {
+      const realElapsed = Date.now() - realStart;
+      const virtualElapsed = realElapsed * speed;
+      const currentVirtual = new Date(startDate + virtualElapsed);
+
+      const options = {
+        year: 'numeric',
+        month: 'numeric',   // изменено для удобства чтения
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'UTC',
+      };
+      timeElem.textContent = currentVirtual.toLocaleString('ru-RU', options);
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000); // 1 секунда, достаточно плавно и эффективно
+  </script>
+</body>
+</html>
