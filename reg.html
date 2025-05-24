@@ -319,7 +319,7 @@
         uploadToImgBB(valutaFile)
       ];
 
-      const [flagUrl, photoUrl, valutaUrl] = await Promise.all(uploads);
+      const [flagUrl, rulerPhotoUrl, currencyPhotoUrl] = await Promise.all(uploads);
 
       await addDoc(collection(db, "applications"), {
         unitary: form.unitary.value.trim(),
@@ -331,8 +331,8 @@
         rulerName: form.rulerName.value.trim(),
         currencyName: form.currencyName.value.trim(),
         flagUrl,
-        photoUrl,
-        valutaUrl,
+        rulerPhotoUrl,
+        currencyPhotoUrl,
         vkID: currentVkID,
         timestamp: new Date()
       });
