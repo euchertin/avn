@@ -1,25 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Страны | ООВГ</title>
-  <link rel="stylesheet" href="css/index.css">
-  <link rel="stylesheet" href="css/countries.css">
-  <link rel="icon" type="image/x-icon" href="logo.svg">
-  <script src="js/countries.js" defer></script>
-  
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="stylesheet" href="css/countries.css" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <script type="module" defer>
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
+      authDomain: "vgovernments-6c294.firebaseapp.com",
+      projectId: "vgovernments-6c294",
+      storageBucket: "vgovernments-6c294.appspot.com",
+      messagingSenderId: "795317676699",
+      appId: "1:795317676699:web:af8649e04af6216d14743e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadCountries() {
+      const querySnapshot = await getDocs(collection(db, "applications"));
+      const list = document.querySelector(".country-list");
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+
+        const el = document.createElement("div");
+        el.className = "country-block";
+
+        el.innerHTML = `
+          <div class="country-flag">
+            <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг">
+          </div>
+          <div class="country-text">
+            <h3>${data.unitary || "Без названия"}</h3>
+            <p>${data.description || "Нет описания"}</p>
+            <button class="details-button" onclick="alert('Подробнее пока не реализовано')">Подробнее</button>
+          </div>
+        `;
+
+        list.appendChild(el);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadCountries);
+  </script>
 </head>
-<body class="screen-jitter"><div class="static-noise"></div>
-  
+<body class="screen-jitter">
+  <div class="static-noise"></div>
   <header>
     <div class="container">
       <nav id="navigation">
-        <img src="logo.svg" alt="Логотип сайта" class="logo" width="65px">
+        <img src="logo.svg" alt="Логотип сайта" class="logo" width="65px" />
         <a aria-label="mobile menu" class="nav-toggle">
-          <span></span>
-          <span></span>
-          <span></span>
+          <span></span><span></span><span></span>
         </a>
         <div class="menu-links error-page-menu">
           <a href="index.html">Главная</a>
@@ -29,72 +69,34 @@
           <a href="#contact">О нас</a>
         </div>
         <div class="vk-link">
-          <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50px"></a>
+          <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK" class="vk-logo vk-small" width="50px" /></a>
         </div>
       </nav>
     </div>
-
-  
-  
   </header>
-
 
   <div class="country-list">
     <div class="search-container">
       <div class="search-wrapper">
-        <input type="text" class="search-input" placeholder="Поиск...">
-        <button class="search-button"><img src="images/search-icon.svg" alt="Поиск", ></button> <!-- Иконка поиска -->
+        <input type="text" class="search-input" placeholder="Поиск..." />
+        <button class="search-button"><img src="images/search-icon.svg" alt="Поиск" /></button>
       </div>
     </div>
-    <div class="country-block">
-      <div class="country-flag">
-        <img src="images/countries/fin.jpg" alt="Flag" style="max-width: 100%; height: auto;">
-      </div>
-      <div class="country-text">
-        <h3>Республика Финляндия</h3>
-        <p>Финляндия (фин. Suomi, швед. Finland) — государство в Северной Европе на восточном побережье Балтийского моря, граничит с Россией и Американской Империей (Рафионией). Это парламентская республика с президентом, избираемым на шесть лет, и однопалатным парламентом — Эдускунтой, состоящим из 200 депутатов, избираемых на четырехлетний срок.</p>
-        <button class="details-button">Подробнее</button> <!-- Кнопка "Подробно" -->
-      </div>
-    </div>
-    <div class="country-block">
-        <div class="country-flag">
-          <img src="images/countries/fin.jpg" alt="Flag" style="max-width: 100%; height: auto;">
-        </div>
-        <div class="country-text">
-          <h3>Республика Финляндия</h3>
-          <p>Финляндия (фин. Suomi, швед. Finland) — государство в Северной Европе на восточном побережье Балтийского моря, граничит с Россией и Американской Империей (Рафионией). Это парламентская республика с президентом, избираемым на шесть лет, и однопалатным парламентом — Эдускунтой, состоящим из 200 депутатов, избираемых на четырехлетний срок.</p>
-          <button class="details-button">Подробнее</button> <!-- Кнопка "Подробно" -->
-        </div>
-      </div>
-      <div class="country-block">
-        <div class="country-flag">
-          <img src="images/countries/fin.jpg" alt="Flag" style="max-width: 100%; height: auto;">
-        </div>
-        <div class="country-text">
-          <h3>Республика Финляндия</h3>
-          <p>Финляндия (фин. Suomi, швед. Finland) — государство в Северной Европе на восточном побережье Балтийского моря, граничит с Россией и Американской Империей (Рафионией). Это парламентская республика с президентом, избираемым на шесть лет, и однопалатным парламентом — Эдускунтой, состоящим из 200 депутатов, избираемых на четырехлетний срок.</p>
-          <button class="details-button">Подробнее</button> <!-- Кнопка "Подробно" -->
-        </div>
-      </div>
+    <!-- карточки добавятся скриптом -->
   </div>
 
   <footer>
-    <div class="footer-logo">
-      <img src="logo.svg" alt="Логотип проекта">
-    </div>
+    <div class="footer-logo"><img src="logo.svg" alt="Логотип проекта"></div>
     <div class="footer-links">
-      <p>❗Проект не имеет никакой реальной политической силы и не ставит своей целью что-либо из политики. Он подчистую является выдумкой и поддерживается желающими этого людьми.</p>
-      <p>❗Мы выступаем в роли агрегатора новостей и предоставление реальной власти внутри группы, но не за её пределами. Мы не несём ответственность за всё, что будет происходить вне сообщества ВК и сайта.</p>
+      <p>❗Проект не имеет реальной политической силы...</p>
+      <p>❗Мы не несём ответственность за всё, что происходит вне сообщества ВК и сайта.</p>
     </div>
     <div class="footer-socials">
-      <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK"></a>
-      <!-- Другие социальные иконки -->
+      <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK" /></a>
     </div>
     <div class="footer-copy">
       <p>© 2024 Евгений Чертин. Все права защищены.</p>
     </div>
   </footer>
-
-  <script src="js/index.js"></script>
 </body>
 </html>
