@@ -325,10 +325,9 @@ async function checkImageWithSightengine(imageUrl) {
 
   // Безопасно проверяем nudity (новый формат API)
   const isSafe = (
-    (!json.nudity || json.nudity.safe >= 0.85) &&
-    (!json.weapon || json.weapon < 0.1) &&
-    (!json.drugs || json.drugs < 0.1) &&
-    (!json.offensive || json.offensive.prob < 0.1)
+    (!json.nudity || json.nudity.safe >= 0.85)
+    
+
   );
 
   return isSafe;
