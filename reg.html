@@ -311,27 +311,6 @@ async function checkTextWithSightengine(text) {
   return json.profanity.matches.length === 0;
 }
 
-async function checkImageWithSightengine(imageUrl) {
-  const url = `https://api.sightengine.com/1.0/check.json?url=${encodeURIComponent(imageUrl)}&models=nudity-2.0,wad,offensive,text-content&api_user=${SIGHTENGINE_USER}&api_secret=${SIGHTENGINE_SECRET}`;
-
-  const res = await fetch(url);
-  const json = await res.json();
-
-  // Проверяем наличие полей в ответе
-  if (!json || json.status === 'failure') {
-    console.error('Sightengine error:', json.error || json);
-    return false;
-  }
-
-  // Безопасно проверяем nudity (новый формат API)
-  const isSafe = (
-    (!json.nudity || json.nudity.safe >= 0.85)
-    
-
-  );
-
-  return isSafe;
-}
 </script>
 <script src="js/index.js"></script>
 
