@@ -8,9 +8,8 @@
   <link rel="stylesheet" href="css/countries.css" />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <script type="module" defer>
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
@@ -24,29 +23,81 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    function generateIdFromRulerName(name) {
+      return name.toLowerCase()
+                 .replace(/ё/g, 'е')
+                 .replace(/[^a-zа-я0-9 ]/gi, '')
+                 .trim()
+                 .replace(/\s+/g, '-');
+    }
+
     async function loadCountries() {
-      const querySnapshot = await getDocs(collection(db, "applications"));
       const list = document.querySelector(".country-list");
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id");
 
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
+      if (id) {
+        // Загрузка одной страны по ID
+        const querySnapshot = await getDocs(collection(db, "applications"));
+        let found = false;
 
-        const el = document.createElement("div");
-        el.className = "country-block";
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const genId = generateIdFromRulerName(data.rulerName || "");
+          if (genId === id) {
+            found = true;
+            const el = document.createElement("div");
+            el.className = "country-block";
+            el.innerHTML = `
+              <div class="country-flag">
+                <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг">
+              </div>
+              <div class="country-text">
+                <h3>${data.unitary || "Без названия"}</h3>
+                <p>${data.description || "Нет описания"}</p>
+                <p><strong>Правитель:</strong> ${data.rulerName || "—"}</p>
+                <p><strong>Форма правления:</strong> ${data.ruleForm || "—"}</p>
+                <p><strong>Население:</strong> ${data.population || "—"}</p>
+                <p><strong>Религия:</strong> ${data.religion || "—"}</p>
+                <p><strong>Валюта:</strong> ${data.currencyName || "—"}</p>
+                <img src="${data.rulerPhotoUrl || 'images/default-avatar.jpg'}" alt="Фото правителя" style="max-width: 200px; margin-top: 20px; border-radius: 15px;">
+              </div>
+            `;
+            list.innerHTML = '';
+            list.appendChild(el);
+          }
+        });
 
-        el.innerHTML = `
-          <div class="country-flag">
-            <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг">
-          </div>
-          <div class="country-text">
-            <h3>${data.unitary || "Без названия"}</h3>
-            <p>${data.description || "Нет описания"}</p>
-            <button class="details-button" onclick="alert('Подробнее пока не реализовано')">Подробнее</button>
-          </div>
-        `;
+        if (!found) {
+          list.innerHTML = "<p>Страна не найдена.</p>";
+        }
 
-        list.appendChild(el);
-      });
+      } else {
+        // Список всех стран
+        const querySnapshot = await getDocs(collection(db, "applications"));
+
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const id = generateIdFromRulerName(data.rulerName || "");
+
+          const el = document.createElement("div");
+          el.className = "country-block";
+          el.innerHTML = `
+            <div class="country-flag">
+              <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг">
+            </div>
+            <div class="country-text">
+              <h3>${data.unitary ||
+                 "Без названия"}</h3>
+              <p>${data.description?.substring(0, 150) || "Нет описания"}...</p>
+              <a href="country.html?id=${id}">
+                <button class="details-button">Подробнее</button>
+              </a>
+            </div>
+          `;
+          list.appendChild(el);
+        });
+      }
     }
 
     document.addEventListener("DOMContentLoaded", loadCountries);

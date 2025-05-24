@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Страна | ООВГ</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="stylesheet" href="css/country.css"/>
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <script type="module" defer>
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
+      authDomain: "vgovernments-6c294.firebaseapp.com",
+      projectId: "vgovernments-6c294",
+      storageBucket: "vgovernments-6c294.appspot.com",
+      messagingSenderId: "795317676699",
+      appId: "1:795317676699:web:af8649e04af6216d14743e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function generateIdFromRulerName(name) {
+      return name.toLowerCase()
+                 .replace(/ё/g, 'е')
+                 .replace(/[^a-zа-я0-9 ]/gi, '')
+                 .trim()
+                 .replace(/\s+/g, '-');
+    }
+
+    async function loadCountry() {
+      const container = document.querySelector(".form-wrapper");
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id");
+
+      if (!id) {
+        container.innerHTML = "<p>Страна не найдена.</p>";
+        return;
+      }
+
+      const querySnapshot = await getDocs(collection(db, "applications"));
+      let found = false;
+
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const genId = generateIdFromRulerName(data.rulerName || "");
+        if (genId === id) {
+          found = true;
+          container.innerHTML = `
+            <h2>${data.unitary || "Без названия"}</h2>
+            <div class="form-grid">
+              <div class="left-column">
+                <div class="upload-wrapper">
+                  <label class="upload-label">Флаг</label>
+                  <div class="flag-field">
+                    <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг" style="max-width: 100%;">
+                  </div>
+                </div>
+                <p><strong>Форма правления:</strong> ${data.ruleForm || "—"}</p>
+                <p><strong>Религия:</strong> ${data.religion || "—"}</p>
+                <p><strong>Население:</strong> ${data.population || "—"}</p>
+                <p><strong>Признание:</strong> ${data.recognition || "—"}</p>
+              </div>
+              <div class="right-column">
+                <label>Описание</label>
+                <p>${data.description || "Нет описания."}</p>
+                <div class="photo-pair">
+                  <div class="centerphoto">
+                    <div class="upload-wrapper">
+                      <label class="upload-label">Правитель</label>
+                      <div class="photo-field">
+                        <img src="${data.rulerPhotoUrl || 'images/default-avatar.jpg'}" alt="Фото правителя" style="max-width: 100%;">
+                      </div>
+                      <div class="phototext">
+                        <p>${data.rulerName || "—"}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="centerphoto">
+                    <div class="upload-wrapper">
+                      <label class="upload-label">Валюта</label>
+                      <div class="valuta-field">
+                        <img src="${data.currencyPhotoUrl || 'images/default-currency.jpg'}" alt="Изображение валюты" style="max-width: 100%;">
+                      </div>
+                      <div class="valuta-text">
+                        <p>${data.currencyName || "—"}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      if (!found) {
+        container.innerHTML = "<p>Страна не найдена.</p>";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadCountry);
+  </script>
+</head>
+<body class="screen-jitter">
+  <div class="static-noise"></div>
+  <header>
+    <div class="container">
+      <nav id="navigation">
+        <img src="logo.svg" alt="Логотип сайта" class="logo" width="65px" />
+        <a aria-label="mobile menu" class="nav-toggle">
+          <span></span><span></span><span></span>
+        </a>
+        <div class="menu-links error-page-menu">
+          <a href="index.html">Главная</a>
+          <a href="map.html">Карта</a>
+          <a href="countries.html">Страны</a>
+          <a href="reg.html">Вступить</a>
+          <a href="#contact">О нас</a>
+        </div>
+        <div class="vk-link">
+          <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK" class="vk-logo vk-small" width="50px" /></a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="form-wrapper">
+    <!-- Данные страны будут загружены сюда -->
+  </div>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.svg" alt="Логотип проекта"></div>
+    <div class="footer-links">
+      <p>❗Проект не имеет реальной политической силы...</p>
+      <p>❗Мы не несём ответственность за всё, что происходит вне сообщества ВК и сайта.</p>
+    </div>
+    <div class="footer-socials">
+      <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK" /></a>
+    </div>
+    <div class="footer-copy">
+      <p>© 2025 Евгений Чертин. Все права защищены.</p>
+    </div>
+  </footer>
+</body>
+</html>
