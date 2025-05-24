@@ -46,7 +46,6 @@
               accept="image/*"
               id="flag-input"
               class="upload-input"
-              onchange="previewImage(event, 'flag-field')"
             />
           </div>
         </div>
@@ -73,7 +72,6 @@
                   accept="image/*"
                   id="photo-input"
                   class="upload-input"
-                  onchange="previewImage(event, 'photo-field')"
                 />
               </div>
               <div class="phototext">
@@ -92,7 +90,6 @@
                   accept="image/*"
                   id="valuta-input"
                   class="upload-input"
-                  onchange="previewImage(event, 'valuta-field')"
                 />
               </div>
               <div class="valuta-text">
@@ -112,7 +109,7 @@
       <p>Введите ваш VK ID:</p>
       <input type="text" id="vk-id-input" placeholder="например, 12345678 или idusername" required />
       <div class="popup-actions">
-        <button type="button" class="popup-btn" onclick="submitVK()">OK</button>
+        <button type="button" class="popup-btn" id="popup-ok-btn">OK</button>
       </div>
       <p id="vk-error" class="error-text"></p>
     </div>
@@ -135,177 +132,158 @@
   </footer>
 
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
-  const IMGUR_CLIENT_ID = "bcc6163b116707d";
-  const firebaseConfig = {
-    apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
-    authDomain: "vgovernments-6c294.firebaseapp.com",
-    projectId: "vgovernments-6c294",
-    storageBucket: "vgovernments-6c294.appspot.com",
-    messagingSenderId: "795317676699",
-    appId: "1:795317676699:web:af8649e04af6216d14743e"
-  };
+    const IMGBB_API_KEY = "8991694a4eefb36967a0130b1383d524";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  async function uploadToImgur(file) {
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const response = await fetch("https://api.imgur.com/3/image", {
-      method: "POST",
-      headers: {
-        Authorization: "Client-ID " + IMGUR_CLIENT_ID,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-    if (!data.success) throw new Error("Ошибка загрузки на Imgur");
-    return data.data.link;
-  }
-
-  function validateForm() {
-    const requiredInputs = document.querySelectorAll('.left-column input[required]');
-    for (let input of requiredInputs) {
-      if (!input.value.trim()) {
-        alert('Пожалуйста, заполните все обязательные поля слева.');
-        return false;
-      }
-    }
-    const description = document.getElementById("description");
-    if (!description.value.trim()) {
-      alert('Пожалуйста, заполните описание.');
-      return false;
-    }
-    return true;
-  }
-
-  async function submitApplication() {
-  const unitary = document.querySelector('input[placeholder="Унитарное/федеративное"]').value;
-  const ruleForm = document.querySelector('input[placeholder="Форма правления"]').value;
-  const religion = document.querySelector('input[placeholder="Государственная религия"]').value;
-  const population = document.querySelector('input[placeholder="Население"]').value;
-  const recognition = document.querySelector('input[placeholder="Признание (частично признанное и т.д.)"]').value;
-  const description = document.getElementById("description").value;
-  const rulerName = document.querySelector(".phototext input").value;
-  const currencyName = document.querySelector(".valuta-text input").value;
-  const vkId = document.getElementById("vk-id-input").value;
-  const flagUrl = document.querySelector(".flag-field").dataset.imgur || "";
-  const rulerPhotoUrl = document.querySelector(".photo-field").dataset.imgur || "";
-  const currencyPhotoUrl = document.querySelector(".valuta-field").dataset.imgur || "";
-
-  try {
-    // Проверка текстов
-    const allTextChecks = await Promise.all([
-      checkTextWithSightengine(description),
-      checkTextWithSightengine(rulerName),
-      checkTextWithSightengine(currencyName),
-    ]);
-
-    if (allTextChecks.includes(false)) {
-      alert("В тексте содержится недопустимый контент (мат или 18+).");
-      return;
-    }
-
-    
-
-
-
-    const data = {
-      unitary,
-      ruleForm,
-      religion,
-      population,
-      recognition,
-      description,
-      flagUrl,
-      rulerPhotoUrl,
-      rulerName,
-      currencyPhotoUrl,
-      currencyName,
-      vkId
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
+      authDomain: "vgovernments-6c294.firebaseapp.com",
+      projectId: "vgovernments-6c294",
+      storageBucket: "vgovernments-6c294.appspot.com",
+      messagingSenderId: "795317676699",
+      appId: "1:795317676699:web:af8649e04af6216d14743e"
     };
 
-    await addDoc(collection(db, "applications"), data);
-    alert("Заявка успешно отправлена!");
-  } catch (error) {
-    console.error("Ошибка при отправке:", error);
-    alert("Ошибка при отправке заявки.");
-  }
-}
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
+    async function uploadToImgBB(file) {
+      const formData = new FormData();
+      formData.append("image", file);
 
-  window.previewImage = async function (event, fieldClass) {
-    const file = event.target.files[0];
-    if (!file) return;
+      // Конвертируем файл в base64
+      const base64 = await fileToBase64(file);
+      formData.set("image", base64.replace(/^data:image\/\w+;base64,/, ""));
 
-    const container = document.querySelector(`.${fieldClass}`);
-    container.innerHTML = '<span class="upload-text">Загрузка...</span>';
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
 
-    try {
-      const link = await uploadToImgur(file);
-      container.innerHTML = `<img src="${link}" alt="Изображение" />`;
-      container.dataset.imgur = link;
-    } catch (err) {
-      container.innerHTML = '<span class="upload-text">Ошибка загрузки</span>';
-      console.error(err);
-    }
-  };
-
-  window.submitVK = async function () {
-    const vkInput = document.getElementById("vk-id-input");
-    const vkId = vkInput.value.trim();
-    const errorText = document.getElementById("vk-error");
-    const popup = document.getElementById("popup");
-
-    if (!vkId) {
-      errorText.textContent = "Введите VK ID";
-      return;
+      const data = await response.json();
+      if (!data.success) throw new Error("Ошибка загрузки на imgBB");
+      return data.data.url;
     }
 
-    if (!/^[0-9a-zA-Z_]+$/.test(vkId)) {
-      errorText.textContent = "Некорректный VK ID";
-      return;
+    // Конвертация файла в base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
     }
 
-    errorText.textContent = "";
-    popup.style.display = "none";
-
-    await submitApplication();
-  };
-
-  document.querySelector(".submit-btn").addEventListener("click", () => {
-    if (validateForm()) {
-      document.getElementById("popup").style.display = "flex";
+    function validateForm() {
+      const requiredInputs = document.querySelectorAll('.left-column input[required]');
+      for (let input of requiredInputs) {
+        if (!input.value.trim()) {
+          alert('Пожалуйста, заполните все обязательные поля слева.');
+          return false;
+        }
+      }
+      const description = document.getElementById("description");
+      if (!description.value.trim()) {
+        alert('Пожалуйста, заполните описание.');
+        return false;
+      }
+      return true;
     }
-  });
 
-  document.getElementById("popup").addEventListener("click", (e) => {
-    if (e.target.id === "popup") {
-      e.target.style.display = "none";
-      document.getElementById("vk-id-input").value = "";
-      document.getElementById("vk-error").textContent = "";
+    async function submitApplication() {
+      const unitary = document.querySelector('input[placeholder="Унитарное/федеративное"]').value;
+      const ruleForm = document.querySelector('input[placeholder="Форма правления"]').value;
+      const religion = document.querySelector('input[placeholder="Государственная религия"]').value;
+      const population = document.querySelector('input[placeholder="Население"]').value;
+      const recognition = document.querySelector('input[placeholder="Признание (частично признанное и т.д.)"]').value;
+      const description = document.getElementById("description").value;
+      const rulerName = document.querySelector('.phototext input').value;
+      const currencyName = document.querySelector('.valuta-text input').value;
+
+      if (!validateForm()) return;
+
+      try {
+        // Получаем файлы
+        const flagFile = document.getElementById('flag-input').files[0];
+        const photoFile = document.getElementById('photo-input').files[0];
+        const valutaFile = document.getElementById('valuta-input').files[0];
+
+        const flagUrl = flagFile ? await uploadToImgBB(flagFile) : "";
+        const photoUrl = photoFile ? await uploadToImgBB(photoFile) : "";
+        const valutaUrl = valutaFile ? await uploadToImgBB(valutaFile) : "";
+
+        // Отправка в Firestore
+        await addDoc(collection(db, "applications"), {
+          unitary,
+          ruleForm,
+          religion,
+          population,
+          recognition,
+          description,
+          rulerName,
+          currencyName,
+          flagUrl,
+          photoUrl,
+          valutaUrl,
+          createdAt: new Date()
+        });
+
+        alert("Заявка успешно отправлена!");
+      } catch (error) {
+        alert("Ошибка при отправке заявки: " + error.message);
+        console.error(error);
+      }
     }
-  });
 
-  const SIGHTENGINE_USER = '1630912505';
-const SIGHTENGINE_SECRET = 'Kw4DsCevjJnKBvQLSHwNejUCjiyYfrBt';
+    // Экспортируем в window, чтобы были доступны из других функций (если нужно)
+    window.submitApplication = submitApplication;
 
-async function checkTextWithSightengine(text) {
-  const url = `https://api.sightengine.com/1.0/text/check.json?text=${encodeURIComponent(text)}&lang=ru&mode=standard&api_user=${SIGHTENGINE_USER}&api_secret=${SIGHTENGINE_SECRET}`;
+    // Обработчики событий для previewImage и кликов по кастомным кнопкам загрузки
+    window.previewImage = function(fileInputId, previewContainerClass) {
+      const fileInput = document.getElementById(fileInputId);
+      const previewContainer = document.querySelector(`.${previewContainerClass}`);
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          // Заменяем содержимое превью на img с выбранным файлом
+          previewContainer.innerHTML = `<img src="${e.target.result}" alt="preview" style="max-width: 100%; max-height: 100%;" />`;
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    };
 
-  const res = await fetch(url);
-  const json = await res.json();
-  return json.profanity.matches.length === 0;
-}
+    // Добавляем прослушку после загрузки DOM
+    document.addEventListener("DOMContentLoaded", () => {
+      // Привязываем клики к дивам, чтобы открывать диалоги выбора файла
+      document.querySelector('.flag-field').addEventListener('click', () => {
+        document.getElementById('flag-input').click();
+      });
+      document.querySelector('.photo-field').addEventListener('click', () => {
+        document.getElementById('photo-input').click();
+      });
+      document.querySelector('.valuta-field').addEventListener('click', () => {
+        document.getElementById('valuta-input').click();
+      });
 
-</script>
-<script src="js/index.js"></script>
+      // Привязываем изменения файлов к функции previewImage
+      document.getElementById('flag-input').addEventListener('change', () => {
+        window.previewImage('flag-input', 'flag-field');
+      });
+      document.getElementById('photo-input').addEventListener('change', () => {
+        window.previewImage('photo-input', 'photo-field');
+      });
+      document.getElementById('valuta-input').addEventListener('change', () => {
+        window.previewImage('valuta-input', 'valuta-field');
+      });
 
-
+      // Обработчик кнопки отправки
+      document.querySelector('.submit-btn').addEventListener('click', () => {
+        submitApplication();
+      });
+    });
+  </script>
 </body>
 </html>
