@@ -14,12 +14,15 @@
 body, html {
   font-family: 'Aldrich-Regular', sans-serif;
   font-size: 23px;
-  height: 100%;
+   min-height: 100%;
+  margin: 0;
+  padding: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 
 /* Фиксированное меню */
 header {
@@ -55,7 +58,7 @@ header {
 .main-content {
   margin-top: 80px;
   overflow-y: auto;
-  height: calc(100vh - 80px);
+  
   padding: 20px;
 }
 
@@ -310,3 +313,47 @@ footer {
   margin-top: auto; /* Отталкивает футер вниз */
 }
 
+.static-noise {
+
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 99999;
+  opacity: 0.1;
+  background-image: url('/images/noise.gif');
+  background-repeat: repeat; /* Добавь это */
+  background-size: auto;
+
+}
+
+/* Базовая настройка */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Обёртка для контента и футера */
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Основной контент отталкивает футер */
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Футер */
+footer {
+  background-color: #222;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
