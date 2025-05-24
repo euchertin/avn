@@ -155,24 +155,25 @@ header {
 }
 
 .country-flag {
-  max-width: 200px; /* или другая подходящая ширина */
-  max-height: 150px; /* чтобы не был слишком высоким */
+  background-color: #333;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
-  overflow: hidden; /* чтобы ничего не вылезало */
+  max-width: 200px;    /* Максимальная ширина контейнера флага */
+  max-height: 150px;   /* Максимальная высота контейнера флага */
+  overflow: hidden;    /* Прячем все, что выходит за пределы */
 }
 
 .country-flag img {
   max-width: 100%;
   max-height: 100%;
-  height: auto;
   width: auto;
-  object-fit: contain; /* сохраняет пропорции и вписывает картинку */
+  height: auto;
+  object-fit: contain; /* Сохраняет пропорции и вписывает в контейнер */
   display: block;
 }
-
 
 
 .country-text {
