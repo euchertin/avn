@@ -312,7 +312,7 @@ async function checkTextWithSightengine(text) {
 }
 
 async function checkImageWithSightengine(imageUrl) {
-  const url = `https://api.sightengine.com/1.0/check.json?models=nudity,wad,offensive&url=${encodeURIComponent(imageUrl)}&api_user=${SIGHTENGINE_USER}&api_secret=${SIGHTENGINE_SECRET}`;
+  const url = `https://api.sightengine.com/1.0/check.json?models=nudity&url=${encodeURIComponent(imageUrl)}&api_user=${SIGHTENGINE_USER}&api_secret=${SIGHTENGINE_SECRET}`;
 
   const res = await fetch(url);
   const json = await res.json();
@@ -328,6 +328,8 @@ async function checkImageWithSightengine(imageUrl) {
 }
 
 </script>
+<script src="js/index.js"></script>
+
 
 </body>
 </html>
