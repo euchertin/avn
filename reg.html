@@ -102,7 +102,7 @@
           </div>
         </div>
       </div>
-    <9/div>
+    </div>
     
     <button type="button" class="submit-btn">Отправить</button>
   </div>
@@ -185,29 +185,67 @@
   }
 
   async function submitApplication() {
+  const unitary = document.querySelector('input[placeholder="Унитарное/федеративное"]').value;
+  const ruleForm = document.querySelector('input[placeholder="Форма правления"]').value;
+  const religion = document.querySelector('input[placeholder="Государственная религия"]').value;
+  const population = document.querySelector('input[placeholder="Население"]').value;
+  const recognition = document.querySelector('input[placeholder="Признание (частично признанное и т.д.)"]').value;
+  const description = document.getElementById("description").value;
+  const rulerName = document.querySelector(".phototext input").value;
+  const currencyName = document.querySelector(".valuta-text input").value;
+  const vkId = document.getElementById("vk-id-input").value;
+  const flagUrl = document.querySelector(".flag-field").dataset.imgur || "";
+  const rulerPhotoUrl = document.querySelector(".photo-field").dataset.imgur || "";
+  const currencyPhotoUrl = document.querySelector(".valuta-field").dataset.imgur || "";
+
+  try {
+    // Проверка текстов
+    const allTextChecks = await Promise.all([
+      checkTextWithSightengine(description),
+      checkTextWithSightengine(rulerName),
+      checkTextWithSightengine(currencyName),
+    ]);
+
+    if (allTextChecks.includes(false)) {
+      alert("В тексте содержится недопустимый контент (мат или 18+).");
+      return;
+    }
+
+    // Проверка изображений
+    const allImageChecks = await Promise.all([
+      flagUrl ? checkImageWithSightengine(flagUrl) : true,
+      rulerPhotoUrl ? checkImageWithSightengine(rulerPhotoUrl) : true,
+      currencyPhotoUrl ? checkImageWithSightengine(currencyPhotoUrl) : true,
+    ]);
+
+    if (allImageChecks.includes(false)) {
+      alert("Одно из изображений содержит нежелательный контент (оружие, наркотики, NSFW).");
+      return;
+    }
+
     const data = {
-      unitary: document.querySelector('input[placeholder="Унитарное/федеративное"]').value,
-      ruleForm: document.querySelector('input[placeholder="Форма правления"]').value,
-      religion: document.querySelector('input[placeholder="Государственная религия"]').value,
-      population: document.querySelector('input[placeholder="Население"]').value,
-      recognition: document.querySelector('input[placeholder="Признание (частично признанное и т.д.)"]').value,
-      description: document.getElementById("description").value,
-      flagUrl: document.querySelector(".flag-field").dataset.imgur || "",
-      rulerPhotoUrl: document.querySelector(".photo-field").dataset.imgur || "",
-      rulerName: document.querySelector(".phototext input").value,
-      currencyPhotoUrl: document.querySelector(".valuta-field").dataset.imgur || "",
-      currencyName: document.querySelector(".valuta-text input").value,
-      vkId: document.getElementById("vk-id-input").value
+      unitary,
+      ruleForm,
+      religion,
+      population,
+      recognition,
+      description,
+      flagUrl,
+      rulerPhotoUrl,
+      rulerName,
+      currencyPhotoUrl,
+      currencyName,
+      vkId
     };
 
-    try {
-      await addDoc(collection(db, "applications"), data);
-      alert("Заявка успешно отправлена!");
-    } catch (error) {
-      console.error("Ошибка при сохранении в Firestore:", error);
-      alert("Ошибка при отправке данных.");
-    }
+    await addDoc(collection(db, "applications"), data);
+    alert("Заявка успешно отправлена!");
+  } catch (error) {
+    console.error("Ошибка при отправке:", error);
+    alert("Ошибка при отправке заявки.");
   }
+}
+
 
   window.previewImage = async function (event, fieldClass) {
     const file = event.target.files[0];
@@ -261,6 +299,34 @@
       document.getElementById("vk-error").textContent = "";
     }
   });
+
+  const SIGHTENGINE_USER = '1630912505';
+const SIGHTENGINE_SECRET = 'Kw4DsCevjJnKBvQLSHwNejUCjiyYfrBt';
+
+async function checkTextWithSightengine(text) {
+  const url = `https://api.sightengine.com/1.0/text/check.json?text=${encodeURIComponent(text)}&lang=ru&mode=standard&api_user=${SIGHTENGINE_USER}&api_secret=${SIGHTENGINE_SECRET}`;
+
+  const res = await fetch(url);
+  const json = await res.json();
+  return json.profanity.matches.length === 0;
+}
+
+async function checkImageWithSightengine(imageUrl) {
+  const url = `https://api.sightengine.com/1.0/check.json?models=nudity,wad,offensive&url=${encodeURIComponent(imageUrl)}&api_user=${SIGHTENGINE_USER}&api_secret=${SIGHTENGINE_SECRET}`;
+
+  const res = await fetch(url);
+  const json = await res.json();
+
+  const isSafe =
+    json.nudity.safe >= 0.9 &&
+    json.weapon === 0 &&
+    json.alcohol === 0 &&
+    json.drugs === 0 &&
+    (!json.offensive || json.offensive.prob <= 0.1);
+
+  return isSafe;
+}
+
 </script>
 
 </body>
