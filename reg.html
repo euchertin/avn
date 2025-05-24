@@ -211,17 +211,9 @@
       return;
     }
 
-    // Проверка изображений
-    const allImageChecks = await Promise.all([
-      flagUrl ? checkImageWithSightengine(flagUrl) : true,
-      rulerPhotoUrl ? checkImageWithSightengine(rulerPhotoUrl) : true,
-      currencyPhotoUrl ? checkImageWithSightengine(currencyPhotoUrl) : true,
-    ]);
+    
 
-    if (allImageChecks.includes(false)) {
-      alert("Одно из изображений содержит нежелательный контент (оружие, наркотики, NSFW).");
-      return;
-    }
+
 
     const data = {
       unitary,
