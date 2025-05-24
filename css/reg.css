@@ -112,6 +112,7 @@ textarea {
   transition: background-color 0.3s, transform 0.2s;
   margin-top: 20px;
   align-self: flex-start;
+  font-family: 'Aldrich-Regular', sans-serif;
 }
 
 .submit-btn:hover {

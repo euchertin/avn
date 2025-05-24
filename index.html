@@ -15,10 +15,34 @@
   src="https://vk.com/js/api/openapi.js?168"
   charset="windows-1251"
 ></script>
-
+<style>
+   #noise-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 110;
+      background: url('/images/effect.gif') repeat;
+      /* Гарантируем работу GIF */
+      image-rendering: pixelated;
+      /* Анимация для принудительного обновления гифки */
+      animation: noise-animation 0.5s infinite;
+    }
+    
+    /* Анимация для гарантии работы GIF */
+    @keyframes noise-animation {
+      0% { opacity: 0.11; }
+      50% { opacity: 0.12; }
+      100% { opacity: 0.11; }
+    }
+</style>
 </head>
 <body class="screen-jitter">
   <div class="static-noise"></div>
+  <div id="noise-overlay"></div>
   <header>
     <div class="container">
       <nav id="navigation">
@@ -191,7 +215,7 @@
       <p>© 2025 Евгений Чертин. Все права защищены.</p>
     </div>
   </footer>
-  
+</div>
   <script src="js/index.js"></script>
 
 </body>

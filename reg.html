@@ -7,10 +7,34 @@
   <link rel="stylesheet" href="css/index.css" />
   <link rel="stylesheet" href="css/reg.css" />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
-  
+  <style>
+   #noise-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 1010;
+      background: url('/images/effect.gif') repeat;
+      /* Гарантируем работу GIF */
+      image-rendering: pixelated;
+      /* Анимация для принудительного обновления гифки */
+      animation: noise-animation 0.5s infinite;
+    }
+    
+    /* Анимация для гарантии работы GIF */
+    @keyframes noise-animation {
+      0% { opacity: 0.11; }
+      50% { opacity: 0.12; }
+      100% { opacity: 0.11; }
+    }
+</style>
 </head>
 
-<body>
+<body class="screen-jitter">
+  <div id="noise-overlay"></div>
   <div class="static-noise"></div>
   <header>
     <div class="container">
