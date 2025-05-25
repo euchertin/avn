@@ -14,7 +14,7 @@
 
   const IMGBB_API_KEY = "8991694a4eefb36967a0130b1383d524";
   const VK_BOT_TOKEN = "3Idyx-CQCI-nIY_g16UKqc1lLvBF30lpM2MyveqSmu9fqbo5fEwO5QzvMBXww77SDQtGY2m4nVoQD_10YmZKZK6QeYBMHEWz6y1_Apc2v_vatHjFe63gdw8bOZx2gDTYR89qhvy-w2zJV9bMUdrGXLWQI0Sl-wYkaFUwrh_VFW8KsPv1zk0GaEcXaI2IV_joliBUxiuI9UQ_QLGxAeOHaA";
-  const ADMIN_VK_ID = "";
+  const ADMIN_VK_ID = "id710686293";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
