@@ -39,9 +39,9 @@ const whiteMachineIcon = L.divIcon({
 // Функция для создания содержимого popup с флагом
 function createPopupContent(feature) {
   if (!feature.properties) return "Нет данных";
-  
+
   let content = "<div style='max-width:250px'>";
-  
+
   // Обработка флага
   content += "<div class='flag-container'>";
   if (feature.properties.flag) {
@@ -49,11 +49,11 @@ function createPopupContent(feature) {
              onerror="this.parentNode.innerHTML='<div class=\\'no-flag\\'>Флаг не загружен</div>'">`;
   }
   content += "</div>";
-  
+
   // Добавляем остальные свойства
   const propsToShow = Object.keys(feature.properties)
     .filter(k => !['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index'].includes(k));
-  
+
   if (propsToShow.length > 0) {
     content += '<div class="properties-list">';
     propsToShow.forEach(key => {
@@ -61,7 +61,7 @@ function createPopupContent(feature) {
     });
     content += '</div>';
   }
-  
+
   content += "</div>";
   return content;
 }
@@ -85,12 +85,52 @@ fetch('map (11).geojson')
       return aZ - bZ;
     });
 
+    // Шаг 1: Найти для каждого fill его флаг и ключ-название
+    const colorDataMap = {};
+    const ignoredKeys = ['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index'];
+
+    for (const feat of sorted) {
+      if (feat.geometry.type === "Polygon" || feat.geometry.type === "MultiPolygon") {
+        const props = feat.properties || {};
+        const fillColor = props.fill;
+
+        const customNameKey = Object.keys(props).find(k => !ignoredKeys.includes(k));
+        const name = customNameKey ? customNameKey : null;
+        const flag = props.flag;
+
+        if (fillColor && (name || flag)) {
+          if (!colorDataMap[fillColor]) colorDataMap[fillColor] = {};
+          if (name) colorDataMap[fillColor].nameKey = name;
+          if (flag) colorDataMap[fillColor].flag = flag;
+        }
+      }
+    }
+
+    // Шаг 2: Добавить недостающие названия/флаги другим объектам с тем же цветом
+    for (const feat of sorted) {
+      if (feat.geometry.type === "Polygon" || feat.geometry.type === "MultiPolygon") {
+        const props = feat.properties || {};
+        const fillColor = props.fill;
+        const data = colorDataMap[fillColor];
+
+        if (fillColor && data) {
+          const hasCustomName = Object.keys(props).some(k => !ignoredKeys.includes(k));
+          if (!hasCustomName && data.nameKey) {
+            props[data.nameKey] = '';
+          }
+          if (!props.flag && data.flag) {
+            props.flag = data.flag;
+          }
+        }
+      }
+    }
+
+    // Шаг 3: Обработка перекрытий
     const processed = [];
 
     for (let i = 0; i < sorted.length; i++) {
       const current = sorted[i];
 
-      // Только для полигонов
       if (current.geometry.type !== "Polygon" && current.geometry.type !== "MultiPolygon") {
         processed.push(current);
         continue;
@@ -98,7 +138,6 @@ fetch('map (11).geojson')
 
       let geom = current;
 
-      // Вырезать все более верхние полигоны (с большим z-index)
       for (let j = i + 1; j < sorted.length; j++) {
         const next = sorted[j];
         if (next.geometry.type !== "Polygon" && next.geometry.type !== "MultiPolygon") continue;
@@ -123,7 +162,7 @@ fetch('map (11).geojson')
       }
     }
 
-    // Остальной код — отрисовка карты
+    // Отрисовка
     const markersLayer = L.layerGroup().addTo(map);
 
     L.geoJSON({ type: "FeatureCollection", features: processed }, {
