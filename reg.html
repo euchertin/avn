@@ -7,30 +7,13 @@
   <link rel="stylesheet" href="css/index.css" />
   <link rel="stylesheet" href="css/reg.css" />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
-  <style>
-   #noise-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      opacity: 0;
-      z-index: 1010;
-      background: url('/images/effect.gif') repeat;
-      /* Гарантируем работу GIF */
-      image-rendering: pixelated;
-      /* Анимация для принудительного обновления гифки */
-      animation: noise-animation 0.5s infinite;
-    }
-    
-    /* Анимация для гарантии работы GIF */
-    @keyframes noise-animation {
-      0% { opacity: 0.11; }
-      50% { opacity: 0.12; }
-      100% { opacity: 0.11; }
-    }
-</style>
+ <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-eval' https://www.gstatic.com https://apis.google.com;
+  img-src 'self' data: https://*.imgbb.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://api.imgbb.com;
+">
 </head>
 
 <body class="screen-jitter">
@@ -51,7 +34,7 @@
           <a href="time.html">Время</a>
         </div>
         <div class="vk-link">
-          <a href="https://vk.com/vgovernments">
+          <a href="https://vk.com/vgovernments" rel="noopener noreferrer">
             <img src="images/vk1.svg" alt="VK" class="vk-logo vk-small" width="50" />
           </a>
         </div>
@@ -75,7 +58,7 @@
                 name="flag"
                 class="upload-input"
                 style="display:none"
-                onchange="previewImage(this, 'flag-field')"
+    
               />
             </div>
           </div>
@@ -85,6 +68,8 @@
             id="unitary"
             name="unitary"
             placeholder="Название страны"
+            pattern="[A-Za-zА-Яа-яЁё0-9\s\-]{2,50}"
+            title="Только буквы, цифры, пробелы и дефисы (2-50 символов)"
             required
           />
           <input
@@ -92,6 +77,8 @@
             id="ruleForm"
             name="ruleForm"
             placeholder="Форма правления"
+            pattern="[A-Za-zА-Яа-яЁё\s\-]{3,50}"
+            title="Только буквы, пробелы и дефисы (3-50 символов)"
             required
           />
           <input
@@ -99,12 +86,16 @@
             id="religion"
             name="religion"
             placeholder="Государственная религия"
+            pattern="[A-Za-zА-Яа-яЁё\s\-]{3,50}"
+            title="Только буквы, пробелы и дефисы (3-50 символов)"
           />
           <input
             type="text"
             id="population"
             name="population"
             placeholder="Население"
+            pattern="[0-9,\s]+"
+            title="Только цифры, запятые и пробелы"
             required
           />
           <input
@@ -112,6 +103,8 @@
             id="recognition"
             name="recognition"
             placeholder="Признание (частично признанное и т.д.)"
+            pattern="[A-Za-zА-Яа-яЁё\s\-]{3,50}"
+            title="Только буквы, пробелы и дефисы (3-50 символов)"
           />
         </div>
 
@@ -121,6 +114,7 @@
             id="description"
             name="description"
             placeholder="Введите описание..."
+            maxlength="2000"
             required
           ></textarea>
 
@@ -137,7 +131,7 @@
                     name="photo"
                     class="upload-input"
                     style="display:none"
-                    onchange="previewImage(this, 'photo-field')"
+                  
                   />
                 </div>
                 <div class="phototext">
@@ -146,6 +140,8 @@
                     id="rulerName"
                     name="rulerName"
                     placeholder="Как зовут правителя?"
+                    pattern="[A-Za-zА-Яа-яЁё\s\-]{2,50}"
+                    title="Только буквы, пробелы и дефисы (2-50 символов)"
                     required
                   />
                 </div>
@@ -164,7 +160,7 @@
                     name="valuta"
                     class="upload-input"
                     style="display:none"
-                    onchange="previewImage(this, 'valuta-field')"
+                  
                   />
                 </div>
                 <div class="valuta-text">
@@ -173,6 +169,8 @@
                     id="currencyName"
                     name="currencyName"
                     placeholder="Название валюты?"
+                    pattern="[A-Za-zА-Яа-яЁё0-9\s\-]{2,50}"
+                    title="Только буквы, цифры, пробелы и дефисы (2-50 символов)"
                     required
                   />
                 </div>
@@ -193,6 +191,8 @@
         type="text"
         id="vk-id-input"
         placeholder="например, 12345678 или idusername"
+        pattern="[a-zA-Z0-9_\-\.]+"
+        title="Только буквы, цифры, подчеркивание, точки и дефисы"
         required
       />
       <div class="popup-actions">
@@ -211,260 +211,16 @@
       <p>❗Мы предоставляем платформу внутри ВК и не несём ответственность за действия вне неё.</p>
     </div>
     <div class="footer-socials">
-      <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK" /></a>
+      <a href="https://vk.com/vgovernments" rel="noopener noreferrer"><img src="images/vk1.svg" alt="VK" /></a>
     </div>
     <div class="footer-copy">
       <p>© 2025 Евгений Чертин. Все права защищены.</p>
     </div>
   </footer>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc
-  } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
-  const IMGBB_API_KEY = "8991694a4eefb36967a0130b1383d524";
+  <script src="js/reg.js" type="module"></script>
+  <script src="js/index.js"></script>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
-    authDomain: "vgovernments-6c294.firebaseapp.com",
-    projectId: "vgovernments-6c294",
-    storageBucket: "vgovernments-6c294.appspot.com",
-    messagingSenderId: "795317676699",
-    appId: "1:795317676699:web:af8649e04af6216d14743e"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Глобальная функция для превью изображений
-  window.previewImage = function(input, fieldClass) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const container = document.querySelector(`.${fieldClass}`);
-    const uploadText = container.querySelector('.upload-text');
-    
-    if (uploadText) {
-      uploadText.style.display = 'none';
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const oldImg = container.querySelector('img');
-      if (oldImg) oldImg.remove();
-      
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      container.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  async function uploadToImgBB(file) {
-    if (!file) return ""; // Возвращаем пустую строку, если файл не выбран
-    
-    const formData = new FormData();
-    formData.append('image', file);
-    
-    try {
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.error?.message || 'Ошибка загрузки на imgBB');
-      }
-      
-      return data.data.url;
-    } catch (error) {
-      console.error('Ошибка загрузки:', error);
-      throw new Error('Не удалось загрузить изображение. Попробуйте ещё раз.');
-    }
-  }
-
-  function validateForm(form) {
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return false;
-    }
-    
-    // Дополнительные проверки
-    if (!document.getElementById('flag-input').files[0]) {
-      alert('Пожалуйста, загрузите флаг');
-      return false;
-    }
-    
-    if (!document.getElementById('photo-input').files[0]) {
-      alert('Пожалуйста, загрузите фото правителя');
-      return false;
-    }
-    
-    if (!document.getElementById('valuta-input').files[0]) {
-      alert('Пожалуйста, загрузите изображение валюты');
-      return false;
-    }
-    
-    return true;
-  }
-
-  let currentVkID = localStorage.getItem("vkID") || "";
-
-  async function submitApplication(event) {
-    event.preventDefault();
-    const form = event.target;
-
-    if (!validateForm(form)) return;
-
-    if (!currentVkID) {
-      openPopup();
-      return;
-    }
-
-    const submitBtn = form.querySelector(".submit-btn");
-    const originalBtnText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Отправка...";
-
-    try {
-      const flagFile = form.flag.files[0];
-      const photoFile = form.photo.files[0];
-      const valutaFile = form.valuta.files[0];
-
-      // Загружаем все изображения параллельно
-      const uploads = [
-        uploadToImgBB(flagFile),
-        uploadToImgBB(photoFile),
-        uploadToImgBB(valutaFile)
-      ];
-
-      const [flagUrl, rulerPhotoUrl, currencyPhotoUrl] = await Promise.all(uploads);
-
-      await addDoc(collection(db, "applications"), {
-        unitary: form.unitary.value.trim(),
-        ruleForm: form.ruleForm.value.trim(),
-        religion: form.religion.value.trim(),
-        population: form.population.value.trim(),
-        recognition: form.recognition.value.trim(),
-        description: form.description.value.trim(),
-        rulerName: form.rulerName.value.trim(),
-        currencyName: form.currencyName.value.trim(),
-        flagUrl,
-        rulerPhotoUrl,
-        currencyPhotoUrl,
-        vkID: currentVkID,
-        timestamp: new Date()
-      });
-
-      alert("Заявка отправлена успешно!");
-      form.reset();
-      
-      // Очищаем превью изображений
-      document.querySelectorAll('.flag-field, .photo-field, .valuta-field').forEach(field => {
-        const img = field.querySelector('img');
-        const text = field.querySelector('.upload-text');
-        if (img) img.remove();
-        if (text) text.style.display = '';
-      });
-    } catch (error) {
-      console.error("Ошибка при отправке:", error);
-      alert("Ошибка: " + error.message);
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalBtnText;
-    }
-  }
-
-  // Инициализация формы
-  const form = document.getElementById("application-form");
-  if (form) {
-    form.addEventListener("submit", submitApplication);
-  }
-
-  // Popup для ввода VK ID
-  const popup = document.getElementById("popup");
-  const vkInput = document.getElementById("vk-id-input");
-  const vkError = document.getElementById("vk-error");
-  const popupOkBtn = document.getElementById("popup-ok-btn");
-
-  function openPopup() {
-    if (popup) {
-      vkInput.value = currentVkID;
-      vkError.textContent = "";
-      popup.style.display = "flex";
-      vkInput.focus();
-    }
-  }
-
-  function closePopup() {
-    if (popup) popup.style.display = "none";
-  }
-
-  if (popupOkBtn) {
-    popupOkBtn.addEventListener("click", () => {
-      const val = vkInput.value.trim();
-      if (!val) {
-        vkError.textContent = "Пожалуйста, введите ваш VK ID";
-        vkInput.focus();
-        return;
-      }
-      
-      currentVkID = val;
-      localStorage.setItem("vkID", val);
-      closePopup();
-    });
-  }
-
-  // Проверка наличия VK ID при загрузке страницы
-  window.addEventListener("load", () => {
-    if (!currentVkID) {
-      openPopup();
-    }
-  });
-
-  // Привязка кликов к видимым дивам для файлов
-  document.querySelectorAll(".flag-field").forEach(div => {
-    div.addEventListener("click", () => {
-      document.getElementById("flag-input").click();
-    });
-    div.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        document.getElementById("flag-input").click();
-      }
-    });
-  });
-
-  document.querySelectorAll(".photo-field").forEach(div => {
-    div.addEventListener("click", () => {
-      document.getElementById("photo-input").click();
-    });
-    div.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        document.getElementById("photo-input").click();
-      }
-    });
-  });
-
-  document.querySelectorAll(".valuta-field").forEach(div => {
-    div.addEventListener("click", () => {
-      document.getElementById("valuta-input").click();
-    });
-    div.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        document.getElementById("valuta-input").click();
-      }
-    });
-  });
-</script>
-<script src="js/index.js"></script>
 </body>
 </html>

@@ -1,0 +1,246 @@
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios');
+const { initializeApp } = require('firebase/app');
+const { getFirestore, collection, query, where, getDocs, updateDoc, doc, deleteDoc, orderBy } = require('firebase/firestore');
+
+const app = express();
+app.use(bodyParser.json());
+
+const {
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID,
+  VK_BOT_TOKEN,
+  VK_CONFIRMATION_TOKEN,
+  VK_SECRET_KEY,
+  VK_ADMIN_ID,
+  PORT = 3000
+} = process.env;
+
+const ADMIN_IDS = VK_ADMIN_ID.split(','); // Можно несколько ID через запятую
+
+// Инициализация Firebase
+const firebaseConfig = {
+  apiKey: FIREBASE_API_KEY,
+  authDomain: FIREBASE_AUTH_DOMAIN,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+  appId: FIREBASE_APP_ID
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+// ==================== Обработчик VK Callback ====================
+app.post('/vk-callback', async (req, res) => {
+  try {
+    // Проверка секретного ключа
+    if (req.body.secret !== VK_SECRET_KEY) {
+      return res.status(403).send('Invalid secret key');
+    }
+
+    // Подтверждение сервера
+    if (req.body.type === 'confirmation') {
+      return res.send(VK_CONFIRMATION_TOKEN);
+    }
+
+    // Обработка сообщений
+    if (req.body.type === 'message_new') {
+      const msg = req.body.object.message;
+      const userId = msg.from_id.toString();
+
+      // Проверка прав админа
+      if (!ADMIN_IDS.includes(userId)) {
+        return res.send('ok');
+      }
+
+      const text = msg.text.toLowerCase().trim();
+
+      // Обработка команд
+      if (text.startsWith('принять')) {
+        const identifier = text.replace('принять', '').trim();
+        await handleAccept(userId, identifier);
+      } 
+      else if (text.startsWith('отклонить')) {
+        const identifier = text.replace('отклонить', '').trim();
+        await handleReject(userId, identifier);
+      }
+      else if (text === 'заявки' || text === '/заявки') {
+        await sendApplicationsList(userId);
+      }
+      else if (text === 'помощь' || text === '/help') {
+        await sendHelp(userId);
+      }
+
+      return res.send('ok');
+    }
+
+    res.send('ok');
+  } catch (error) {
+    console.error('Ошибка:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
+// ==================== Основные функции ====================
+
+// Принять заявку
+async function handleAccept(userId, identifier) {
+  try {
+    const app = await findApplication(identifier);
+    if (!app) {
+      return await sendMessage(userId, '❌ Заявка не найдена. Используйте «заявки» для списка.');
+    }
+
+    await updateDoc(doc(db, "applications", app.id), { 
+      status: "approved",
+      approvedAt: new Date(),
+      approvedBy: userId
+    });
+
+    await sendMessage(userId, `✅ Принято: «${app.unitary}»\nПравитель: ${app.rulerName}`);
+  } catch (error) {
+    console.error('Ошибка принятия:', error);
+    await sendMessage(userId, '❌ Ошибка при принятии заявки');
+  }
+}
+
+// Отклонить заявку
+async function handleReject(userId, identifier) {
+  try {
+    const app = await findApplication(identifier);
+    if (!app) {
+      return await sendMessage(userId, '❌ Заявка не найдена. Используйте «заявки» для списка.');
+    }
+
+    await deleteDoc(doc(db, "applications", app.id));
+    await sendMessage(userId, `❌ Отклонено: «${app.unitary}»`);
+  } catch (error) {
+    console.error('Ошибка отклонения:', error);
+    await sendMessage(userId, '❌ Ошибка при отклонении заявки');
+  }
+}
+
+// Найти заявку (по номеру или названию)
+async function findApplication(identifier) {
+  const apps = await getPendingApplications();
+  if (!identifier) return apps[0]; // Если команда без номера — берем первую
+
+  // Поиск по номеру
+  if (/^\d+$/.test(identifier)) {
+    return apps[parseInt(identifier) - 1];
+  }
+
+  // Поиск по названию
+  return apps.find(app => 
+    app.unitary.toLowerCase().includes(identifier.toLowerCase())
+  );
+}
+
+// Список всех заявок
+async function sendApplicationsList(userId) {
+  const apps = await getPendingApplications();
+  if (apps.length === 0) {
+    return await sendMessage(userId, '📭 Нет заявок на рассмотрении');
+  }
+
+  // Текстовый список
+  let message = '📋 Активные заявки:\n\n';
+  apps.forEach((app, index) => {
+    message += `${index + 1}. «${app.unitary}»\n` +
+               `   👑 ${app.rulerName}\n` +
+               `   🏛 ${app.ruleForm}\n` +
+               `   👥 ${app.population}\n\n` +
+               `   ✅ принять ${index + 1}\n` +
+               `   ❌ отклонить ${index + 1}\n\n` +
+               '――――――――――――――――――\n\n';
+  });
+
+  await sendMessage(userId, message);
+
+  // Отправка изображений для каждой заявки
+  for (const app of apps) {
+    await sendApplicationImages(userId, app);
+  }
+}
+
+// Отправить изображения заявки
+async function sendApplicationImages(userId, app) {
+  try {
+    const images = [];
+    if (app.flagUrl) images.push(app.flagUrl);
+    if (app.rulerPhotoUrl) images.push(app.rulerPhotoUrl);
+    if (app.currencyPhotoUrl) images.push(app.currencyPhotoUrl);
+
+    if (images.length > 0) {
+      await sendMessage(
+        userId,
+        `📷 «${app.unitary}»: флаг${app.rulerPhotoUrl ? ', правитель' : ''}${app.currencyPhotoUrl ? ', валюта' : ''}`,
+        images
+      );
+    }
+  } catch (error) {
+    console.error('Ошибка отправки изображений:', error);
+  }
+}
+
+// Получить заявки из Firebase
+async function getPendingApplications() {
+  const q = query(
+    collection(db, "applications"),
+    where("status", "==", "pending"),
+    orderBy("timestamp", "asc")
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+// Отправить справку
+async function sendHelp(userId) {
+  const helpText = `📌 Команды модератора:\n\n` +
+    `• «принять 1» — принять заявку №1\n` +
+    `• «принять Франция» — принять по названию\n` +
+    `• «отклонить 2» — отклонить заявку №2\n` +
+    `• «заявки» — список всех заявок\n\n` +
+    `📎 Бот автоматически присылает:\n` +
+    `— Текст заявки\n` +
+    `— Флаг, фото правителя и валюту`;
+  
+  await sendMessage(userId, helpText);
+}
+
+// ==================== Вспомогательные функции ====================
+
+// Отправить сообщение в VK
+async function sendMessage(userId, text, images = []) {
+  try {
+    let attachment = '';
+    if (images.length > 0) {
+      attachment = images.map(url => `photo${encodeURIComponent(url)}`).join(',');
+    }
+
+    await axios.post('https://api.vk.com/method/messages.send', null, {
+      params: {
+        access_token: VK_BOT_TOKEN,
+        user_id: userId,
+        message: text,
+        attachment,
+        random_id: Math.floor(Math.random() * 1000000),
+        v: '5.131'
+      }
+    });
+  } catch (error) {
+    console.error('Ошибка отправки:', error.response?.data || error.message);
+  }
+}
+
+// ==================== Запуск сервера ====================
+app.listen(PORT, () => {
+  console.log(`Сервер модерации запущен на порту ${PORT}`);
+});
