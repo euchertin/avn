@@ -1,0 +1,10 @@
+.leaflet-popup-content {
+  overflow-x: hidden; /* запрещаем горизонтальный скролл */
+}
+
+.flag-img {
+  max-width: 100%; /* ограничиваем ширину изображения */
+  height: auto;     /* сохраняем пропорции */
+  display: block;
+  margin: 0 auto;
+}
