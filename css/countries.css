@@ -6,13 +6,13 @@
 }
 
 @font-face {
-  font-family: 'Aldrich-Regular';
-  src: url('../fonts/Aldrich-Regular.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('../fonts/FuturaPT-Demi.woff') format('truetype');
   font-style: normal;
 }
 
 body, html {
-  font-family: 'Aldrich-Regular', sans-serif;
+  font-family: 'Futura', sans-serif;
   font-size: 23px;
   min-height: 100%;
   margin: 0;
@@ -31,7 +31,7 @@ header {
   top: 0;
   left: 0;
   z-index: 10000;
-  font-family: 'Aldrich-Regular', sans-serif;
+  font-family: 'Futura', sans-serif;
 }
 
 .container {
@@ -81,7 +81,7 @@ header {
   background-color: #333;
   color: #fff;
   font-size: 17px;
-  font-family: 'Aldrich-Regular', sans-serif;
+  font-family: 'Futura', sans-serif;
 }
 
 .search-input:focus {
@@ -118,7 +118,7 @@ header {
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-size: 20px;
-  font-family: 'Aldrich-Regular', sans-serif;
+  font-family: 'Futura', sans-serif;
   margin-top: 10px;
 }
 
@@ -178,7 +178,7 @@ header {
   padding: 20px;
   background-color: #222;
   border-left: 1px solid #444;
-  font-family: 'Aldrich-Regular', sans-serif;
+  font-family: 'Futura', sans-serif;
 }
 
 /* Анимации */

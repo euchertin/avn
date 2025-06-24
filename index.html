@@ -15,34 +15,9 @@
   src="https://vk.com/js/api/openapi.js?168"
   charset="windows-1251"
 ></script>
-<style>
-   #noise-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      opacity: 0;
-      z-index: 110;
-      background: url('/images/effect.gif') repeat;
-      /* Гарантируем работу GIF */
-      image-rendering: pixelated;
-      /* Анимация для принудительного обновления гифки */
-      animation: noise-animation 0.5s infinite;
-    }
-    
-    /* Анимация для гарантии работы GIF */
-    @keyframes noise-animation {
-      0% { opacity: 0.11; }
-      50% { opacity: 0.12; }
-      100% { opacity: 0.11; }
-    }
-</style>
+
 </head>
-<body class="screen-jitter">
-  <div class="static-noise"></div>
-  <div id="noise-overlay"></div>
+<body>
   <header>
     <div class="container">
       <nav id="navigation">
@@ -69,14 +44,14 @@
   <section class="photo-section">
     <picture>
       <source media="(max-width: 768px)" srcset="images/photo2.png">
-      <img src="images/photo.jpg" alt="Описание фото" class="horizontal-photo">
+      <img src="images/photo.png" alt="Описание фото" class="horizontal-photo">
     </picture>
   </section>
   
   <section class="project-description">
     <h2>О проекте</h2>
     <p>
-      Организация Объединённых Виртуальных Государств (ООВГ) — проект, который объединяет пользователей со всего мира для участия в виртуальных играх по управлению странами. Проект предоставляет уникальные возможности для стратегического мышления и командной работы.
+      Ассоциация Виртуальных Наций (сокр. АВН) — объединенный «RolePlay» проект в жанре месседж-стратегии. Данный проект ни в коем случае не является поддержкой сепаратистских образований, «виртуальные государства» для нас — выдуманные государства, находящиеся на просторе сети ВКонтакте
     </p>
     <p>
       Наш проект создан для тех, кто интересуется политикой, дипломатией, военными действиями и экономикой. Здесь каждый участник может развить свои навыки и почувствовать себя лидером виртуальной страны.
