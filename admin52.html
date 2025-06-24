@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Админка заявок | АВН</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="stylesheet" href="css/country.css" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <style>
+  * {
+   font-family: 'Futura', sans-serif;
+}
+
+    /* Твой стиль для админки — не трогаем */
+    .application {
+      background-color: #1a1a1a;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.6);
+      margin-bottom: 40px;
+      padding: 30px;
+      font-family: 'Futura', sans-serif;
+      color: #fff;
+    }
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    .app-header > div {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .btns {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    button {
+      cursor: pointer;
+      border-radius: 20px;
+      border: none;
+      padding: 12px 28px;
+      font-size: 18px;
+      font-family: 'Futura', sans-serif;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    button.approve {
+      background-color: #28a745;
+      color: white;
+    }
+    button.approve:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
+    button.reject {
+      background-color: #dc3545;
+      color: white;
+    }
+    button:hover:not(:disabled) {
+      filter: brightness(1.15);
+    }
+
+    /* Стили для экрана ввода пароля */
+    #auth-wrapper {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+      color: #eee;
+      font-family: 'Futura', sans-serif;
+      padding: 20px;
+    }
+    #auth-wrapper input[type="password"] {
+      font-size: 24px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 15px;
+      width: 250px;
+      background: #222;
+      color: #eee;
+      outline: none;
+      box-sizing: border-box;
+    }
+    #auth-wrapper button {
+      margin-top: 20px;
+      padding: 12px 32px;
+      font-size: 20px;
+      border-radius: 8px;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #auth-wrapper button:hover {
+      background-color: #218838;
+    }
+    #auth-error {
+      margin-top: 15px;
+      color: #dc3545;
+      font-weight: 700;
+      min-height: 24px;
+    }
+
+    /* Скрываем админку пока не авторизован */
+    #admin-content {
+      display: none;
+    }
+    .password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#passwordInput {
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  flex: 1;
+}
+
+#togglePassword {
+  padding: 10px;
+  border: none;
+  background: #333;
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <nav id="navigation">
+      <img src="logo.svg" alt="Логотип сайта" class="logo" width="65px" />
+      <a aria-label="mobile menu" class="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </a>
+      <div class="menu-links menu">
+        <a href="index.html">Главная</a>
+        <a href="map.html">Карта</a>
+        <a href="countries.html">Страны</a>
+        <a href="reg.html">Вступить</a>
+        <a href="time.html">Время</a>
+      </div>
+      <div class="vk-link">
+        <a href="https://vk.com/avncommunity"><img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50px" /></a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Экран авторизации -->
+<div id="auth-wrapper">
+  <h1>Введите пароль для доступа к админке</h1>
+  <div class="password-wrapper">
+  <input type="password" id="password-input" placeholder="Введите пароль">
+  <button type="button" id="togglePassword">👁</button>
+</div>
+
+  
+  <button id="submit-password">Войти</button>
+  <div id="auth-error"></div>
+</div>
+
+
+<!-- Сам контент админки -->
+<div id="admin-content" class="container" style="max-width:1400px; margin: 80px auto; padding: 0 20px;">
+  <h1 style="color:#fff; font-family: 'Futura', sans-serif; margin-bottom: 40px;">Администрация</h1>
+  <div id="applications-list">
+    <p style="color:#bbb;">Загрузка заявок...</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo"><img src="logo.svg" alt="Логотип проекта" /></div>
+  <div class="footer-links">
+    <p>❗Проект не имеет никакой реальной политической силы и не ставит своей целью что-либо из политики. Он подчистую является выдумкой и поддерживается желающими этого людьми.</p>
+    <p>❗Мы выступаем в роли агрегатора новостей и предоставление реальной власти внутри группы, но не за её пределами. Мы не несём ответственность за всё, что будет происходить вне сообщества ВК и сайта.</p>
+  </div>
+  <div class="footer-socials">
+    <a href="https://vk.com/avncommunity"><img src="images/vk1.svg" alt="VK" /></a>
+  </div>
+  <div class="footer-copy">
+    <p>© 2025 Евгений Чертин. Все права защищены.</p>
+  </div>
+</footer>
+
+<script>
+  // Просто обработка авторизации — пароль "авнкрутой"
+  const PASSWORD = "авнкрутой";
+
+  const authWrapper = document.getElementById("auth-wrapper");
+  const adminContent = document.getElementById("admin-content");
+  const input = document.getElementById("password-input");
+  const btn = document.getElementById("submit-password");
+  const errorDiv = document.getElementById("auth-error");
+
+  btn.addEventListener("click", () => {
+    const val = input.value.trim();
+    if (val === PASSWORD) {
+      // Скрыть экран ввода пароля, показать админку
+      authWrapper.style.display = "none";
+      adminContent.style.display = "block";
+
+      // Запускаем скрипт админки: т.к. он у тебя в модуле, он сам подхватится
+      // Здесь ничего не надо запускать, т.к. модуль ждёт DOMContentLoaded,
+      // а сейчас он уже наступил, поэтому код админки выполнится.
+
+    } else {
+      errorDiv.textContent = "Неверный пароль!";
+      input.value = "";
+      input.focus();
+    }
+  });
+
+  // Позволим Enter для удобства
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      btn.click();
+    }
+  });
+</script>
+
+<!-- Твой скрипт админки, оставлен без изменений -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
+    authDomain: "vgovernments-6c294.firebaseapp.com",
+    projectId: "vgovernments-6c294",
+    storageBucket: "vgovernments-6c294.appspot.com",
+    messagingSenderId: "795317676699",
+    appId: "1:795317676699:web:af8649e04af6216d14743e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const applicationsList = document.getElementById("applications-list");
+
+  function createApplicationCard(id, data) {
+    const appDiv = document.createElement("div");
+    appDiv.className = "application";
+
+    appDiv.innerHTML = `
+      <div class="form-grid">
+        <div class="left-column">
+          <div class="upload-wrapper">
+            <label class="upload-label">Флаг</label>
+            <div class="flag-field">
+              <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг страны" />
+            </div>
+          </div>
+          <p><strong>Форма правления:</strong> ${data.ruleForm || "—"}</p>
+          <p><strong>Религия:</strong> ${data.religion || "—"}</p>
+          <p><strong>Население:</strong> ${data.population || "—"}</p>
+          <p><strong>Признание:</strong> ${data.recognition || "—"}</p>
+        </div>
+        <div class="right-column">
+          <label>Описание</label>
+          <p style="white-space: pre-wrap;">${data.description || "Нет описания."}</p>
+          <div class="photo-pair" style="margin-top: 20px;">
+            <div class="centerphoto">
+              <div class="upload-wrapper">
+                <label class="upload-label">Правитель</label>
+                <div class="photo-field">
+                  <img src="${data.rulerPhotoUrl || 'images/default-avatar.jpg'}" alt="Фото правителя" />
+                </div>
+                <div class="phototext">
+                  <p>${data.rulerName || "—"}</p>
+                </div>
+              </div>
+            </div>
+            <div class="centerphoto">
+              <div class="upload-wrapper">
+                <label class="upload-label">Валюта</label>
+                <div class="valuta-field">
+                  <img src="${data.currencyPhotoUrl || 'images/default-currency.jpg'}" alt="Изображение валюты" />
+                </div>
+                <div class="valuta-text">
+                  <p>${data.currencyName || "—"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-header" style="margin-top: 30px; justify-content: flex-start;">
+        <div><strong>Статус:</strong> <span class="status">${data.status}</span></div>
+        <div class="btns" style="margin-left: auto;">
+          <button class="approve" ${data.status === "approved" ? "disabled" : ""}>Принять</button>
+          <button class="reject">Отклонить</button>
+        </div>
+      </div>
+    `;
+
+    const approveBtn = appDiv.querySelector("button.approve");
+    const rejectBtn = appDiv.querySelector("button.reject");
+    const statusSpan = appDiv.querySelector(".status");
+
+    approveBtn.addEventListener("click", async () => {
+      try {
+        await updateDoc(doc(db, "applications", id), { status: "approved" });
+        statusSpan.textContent = "approved";
+        approveBtn.disabled = true;
+        alert("Заявка принята");
+      } catch (e) {
+        alert("Ошибка при обновлении статуса");
+        console.error(e);
+      }
+    });
+
+    rejectBtn.addEventListener("click", async () => {
+      if (!confirm("Вы действительно хотите отклонить и удалить заявку?")) return;
+      try {
+        await deleteDoc(doc(db, "applications", id));
+        appDiv.remove();
+        alert("Заявка отклонена и удалена");
+      } catch (e) {
+        alert("Ошибка при удалении заявки");
+        console.error(e);
+      }
+    });
+
+    return appDiv;
+  }
+
+  async function loadApplications() {
+    applicationsList.innerHTML = '<p style="color:#bbb;">Загрузка заявок...</p>';
+    try {
+      const q = query(collection(db, "applications"), orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+      applicationsList.innerHTML = "";
+
+      if (querySnapshot.empty) {
+        applicationsList.innerHTML = "<p>Заявок нет</p>";
+        return;
+      }
+
+      querySnapshot.forEach(docSnap => {
+        const id = docSnap.id;
+        const data = docSnap.data();
+        const appCard = createApplicationCard(id, data);
+        applicationsList.appendChild(appCard);
+      });
+    } catch (err) {
+      applicationsList.innerHTML = "<p>Ошибка загрузки заявок</p>";
+      console.error(err);
+    }
+  }
+
+  document.getElementById("togglePassword").addEventListener("click", () => {
+  const input = document.getElementById("password-input");
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+});
+
+</script>
+
+<script src="js/index.js"></script>
+
+</body>
+</html>

@@ -21,6 +21,20 @@ h2 {
   font-size: 28px;
 }
 
+select {
+  background-color: #333;
+  border: none;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 18px;
+  padding: 14px 18px;
+  font-family: 'Futura', sans-serif;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
 .form-grid {
   display: flex;
   flex-wrap: wrap;

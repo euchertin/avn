@@ -71,15 +71,48 @@
             title="Только буквы, цифры, пробелы и дефисы (2-50 символов)"
             required
           />
-          <input
-            type="text"
-            id="ruleForm"
-            name="ruleForm"
-            placeholder="Форма правления"
-            pattern="[A-Za-zА-Яа-яЁё\s\-]{3,50}"
-            title="Только буквы, пробелы и дефисы (3-50 символов)"
-            required
-          />
+          <select id="ruleForm" name="ruleForm" required>
+  <option value="" disabled selected>Выберите форму правления</option>
+  
+  <!-- Республиканские формы -->
+  <option>Президентская республика</option>
+  <option>Парламентская республика</option>
+  <option>Смешанная республика</option>
+  <option>Однопартийная республика</option>
+  <option>Советская республика</option>
+  <option>Исламская республика</option>
+  <option>Военная республика</option>
+
+  <!-- Монархические формы -->
+  <option>Абсолютная монархия</option>
+  <option>Конституционная монархия</option>
+  <option>Парламентская монархия</option>
+  <option>Дуалистическая монархия</option>
+  
+  <!-- Диктатуры и автократии -->
+  <option>Военная диктатура</option>
+  <option>Гражданская диктатура</option>
+  <option>Хунта</option>
+
+  <!-- Теократические и религиозные -->
+  <option>Теократия</option>
+  <option>Иерархическая теократия</option>
+  <option>Религиозная монархия</option>
+
+  <!-- Прочие / уникальные -->
+  <option>Переходное правительство</option>
+  <option>Временное правительство</option>
+  <option>Революционное правительство</option>
+  <option>Анархия</option>
+  <option>Технократия</option>
+  <option>Охлократия</option>
+  <option>Меритократия</option>
+  <option>Корпоратократия</option>
+
+  <!-- Специальное -->
+  <option>Иное (по решению администрации)</option>
+</select>
+
           <input
             type="text"
             id="religion"
@@ -97,14 +130,13 @@
             title="Только цифры, запятые и пробелы"
             required
           />
-          <input
-            type="text"
-            id="recognition"
-            name="recognition"
-            placeholder="Признание (частично признанное и т.д.)"
-            pattern="[A-Za-zА-Яа-яЁё\s\-]{3,50}"
-            title="Только буквы, пробелы и дефисы (3-50 символов)"
-          />
+        <select id="recognition" name="recognition">
+  <option value="" disabled selected>Выберите вид государственного устройства</option>
+  <option>Унитарное</option>
+  <option>Федеративное</option>
+  <option>Конфедеративное</option>
+</select>
+
         </div>
 
         <div class="right-column">
