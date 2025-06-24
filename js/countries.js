@@ -1,15 +1,17 @@
-// Получаем элементы
 const searchInput = document.querySelector('.search-input');
-const countryBlocks = document.querySelectorAll('.country-block');
 
 searchInput.addEventListener('input', () => {
   const query = searchInput.value.trim().toLowerCase();
 
-  countryBlocks.forEach(block => {
-    // Берём текст страны из блока (например, внутри .country-text)
-    const countryName = block.querySelector('.country-text').textContent.toLowerCase();
+  // Получаем все текущие блоки (вдруг они добавились позже)
+  const countryBlocks = document.querySelectorAll('.country-block');
 
-    // Показываем блок, если он содержит запрос, иначе скрываем
+  countryBlocks.forEach(block => {
+    const countryTextElement = block.querySelector('.country-text');
+    if (!countryTextElement) return;
+
+    const countryName = countryTextElement.textContent.toLowerCase();
+
     if (countryName.includes(query)) {
       block.style.display = 'flex';
     } else {

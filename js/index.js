@@ -101,15 +101,15 @@ initCarousel('.first-carousel', '.first-carousel .carousel-indicators');
 
 // Обработка нажатий на элементы второго карусели
 document.getElementById("3").onclick = function() {
-  window.open("https://vk.com/wall-201784905_1924", "_blank"); 
+  window.open("", "_blank"); 
 };
 
 document.getElementById("2").onclick = function() {
-  window.open("https://vk.com/wall-201784905_1925", "_blank"); 
+  window.open("", "_blank"); 
 };
 
 document.getElementById("1").onclick = function() {
-  window.open("https://vk.com/wall-201784905_1926", "_blank"); 
+  window.open("", "_blank"); 
 }; 
 
 const menuLinks = document.querySelector('.menu-links');
