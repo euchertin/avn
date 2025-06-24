@@ -203,41 +203,6 @@
   </div>
 </footer>
 
-<script>
-  // Просто обработка авторизации — пароль "авнкрутой"
-  const PASSWORD = "авнкрутой";
-
-  const authWrapper = document.getElementById("auth-wrapper");
-  const adminContent = document.getElementById("admin-content");
-  const input = document.getElementById("password-input");
-  const btn = document.getElementById("submit-password");
-  const errorDiv = document.getElementById("auth-error");
-
-  btn.addEventListener("click", () => {
-    const val = input.value.trim();
-    if (val === PASSWORD) {
-      // Скрыть экран ввода пароля, показать админку
-      authWrapper.style.display = "none";
-      adminContent.style.display = "block";
-
-      // Запускаем скрипт админки: т.к. он у тебя в модуле, он сам подхватится
-      // Здесь ничего не надо запускать, т.к. модуль ждёт DOMContentLoaded,
-      // а сейчас он уже наступил, поэтому код админки выполнится.
-
-    } else {
-      errorDiv.textContent = "Неверный пароль!";
-      input.value = "";
-      input.focus();
-    }
-  });
-
-  // Позволим Enter для удобства
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      btn.click();
-    }
-  });
-</script>
 
 <!-- Твой скрипт админки, оставлен без изменений -->
 <script type="module">
@@ -267,6 +232,8 @@
       <div class="form-grid">
         <div class="left-column">
           <div class="upload-wrapper">
+            <p>${data.unitary || "—"}</p>
+    
             <label class="upload-label">Флаг</label>
             <div class="flag-field">
               <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг страны" />
@@ -377,6 +344,34 @@
   input.type = isPassword ? "text" : "password";
 });
 
+// Просто обработка авторизации — пароль "авнкрутой"
+  const PASSWORD = "авнкрут";
+
+  const authWrapper = document.getElementById("auth-wrapper");
+  const adminContent = document.getElementById("admin-content");
+  const input = document.getElementById("password-input");
+  const btn = document.getElementById("submit-password");
+  const errorDiv = document.getElementById("auth-error");
+
+  btn.addEventListener("click", () => {
+  const val = input.value.trim();
+  if (val === PASSWORD) {
+    authWrapper.style.display = "none";
+    adminContent.style.display = "block";
+    loadApplications();
+  } else {
+    errorDiv.textContent = "Неверный пароль!";
+    input.value = "";
+    input.focus();
+  }
+});
+
+  // Позволим Enter для удобства
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      btn.click();
+    }
+  });
 </script>
 
 <script src="js/index.js"></script>
