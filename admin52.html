@@ -148,11 +148,7 @@
   <div class="container">
     <nav id="navigation">
       <img src="logo.svg" alt="Логотип сайта" class="logo" width="65px" />
-      <a aria-label="mobile menu" class="nav-toggle">
-        <span></span>
-        <span></span>
-        <span></span>
-      </a>
+      <a class="nav-toggle"><span></span><span></span><span></span></a>
       <div class="menu-links menu">
         <a href="index.html">Главная</a>
         <a href="map.html">Карта</a>
@@ -161,29 +157,28 @@
         <a href="time.html">Время</a>
       </div>
       <div class="vk-link">
-        <a href="https://vk.com/avncommunity"><img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50px" /></a>
+        <a href="https://vk.com/avncommunity"><img src="images/vk1.svg" alt="VK" class="vk-logo vk-small" width="50px" /></a>
       </div>
     </nav>
   </div>
 </header>
 
-<!-- Экран авторизации -->
 <div id="auth-wrapper">
   <h1>Введите пароль для доступа к админке</h1>
   <div class="password-wrapper">
-  <input type="password" id="password-input" placeholder="Введите пароль">
-  <button type="button" id="togglePassword">👁</button>
-</div>
-
-  
+    <input type="password" id="password-input" placeholder="Введите пароль" />
+    <button type="button" id="togglePassword">👁</button>
+  </div>
   <button id="submit-password">Войти</button>
   <div id="auth-error"></div>
 </div>
 
-
-<!-- Сам контент админки -->
 <div id="admin-content" class="container" style="max-width:1400px; margin: 80px auto; padding: 0 20px;">
-  <h1 style="color:#fff; font-family: 'Futura', sans-serif; margin-bottom: 40px;">Администрация</h1>
+  <h1 style="color:#fff; margin-bottom: 40px;">Администрация</h1>
+  <div id="tabs">
+    <button id="tab-pending" class="tab active">Ждут рассмотрения</button>
+    <button id="tab-approved" class="tab">Принятые</button>
+  </div>
   <div id="applications-list">
     <p style="color:#bbb;">Загрузка заявок...</p>
   </div>
@@ -192,8 +187,8 @@
 <footer>
   <div class="footer-logo"><img src="logo.svg" alt="Логотип проекта" /></div>
   <div class="footer-links">
-    <p>❗Проект не имеет никакой реальной политической силы и не ставит своей целью что-либо из политики. Он подчистую является выдумкой и поддерживается желающими этого людьми.</p>
-    <p>❗Мы выступаем в роли агрегатора новостей и предоставление реальной власти внутри группы, но не за её пределами. Мы не несём ответственность за всё, что будет происходить вне сообщества ВК и сайта.</p>
+    <p>❗Проект не имеет никакой реальной политической силы и является выдумкой.</p>
+    <p>❗Мы не несём ответственности за действия вне сообщества ВК и сайта.</p>
   </div>
   <div class="footer-socials">
     <a href="https://vk.com/avncommunity"><img src="images/vk1.svg" alt="VK" /></a>
@@ -203,12 +198,10 @@
   </div>
 </footer>
 
-
-<!-- Твой скрипт админки, оставлен без изменений -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import {
-    getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, query, orderBy
+    getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, query, orderBy, getDoc
   } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -223,6 +216,8 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const applicationsList = document.getElementById("applications-list");
+
+  let currentTab = "pending";
 
   function createApplicationCard(id, data) {
     const appDiv = document.createElement("div");
@@ -293,9 +288,8 @@
         statusSpan.textContent = "approved";
         approveBtn.disabled = true;
         alert("Заявка принята");
-      } catch (e) {
+      } catch {
         alert("Ошибка при обновлении статуса");
-        console.error(e);
       }
     });
 
@@ -305,9 +299,8 @@
         await deleteDoc(doc(db, "applications", id));
         appDiv.remove();
         alert("Заявка отклонена и удалена");
-      } catch (e) {
+      } catch {
         alert("Ошибка при удалении заявки");
-        console.error(e);
       }
     });
 
@@ -321,31 +314,42 @@
       const querySnapshot = await getDocs(q);
       applicationsList.innerHTML = "";
 
-      if (querySnapshot.empty) {
-        applicationsList.innerHTML = "<p>Заявок нет</p>";
-        return;
-      }
-
+      let found = false;
       querySnapshot.forEach(docSnap => {
-        const id = docSnap.id;
         const data = docSnap.data();
-        const appCard = createApplicationCard(id, data);
-        applicationsList.appendChild(appCard);
+        if (data.status === currentTab) {
+          const appCard = createApplicationCard(docSnap.id, data);
+          applicationsList.appendChild(appCard);
+          found = true;
+        }
       });
-    } catch (err) {
+
+      if (!found) {
+        applicationsList.innerHTML = "<p>Заявок нет</p>";
+      }
+    } catch {
       applicationsList.innerHTML = "<p>Ошибка загрузки заявок</p>";
-      console.error(err);
     }
   }
 
-  document.getElementById("togglePassword").addEventListener("click", () => {
-  const input = document.getElementById("password-input");
-  const isPassword = input.type === "password";
-  input.type = isPassword ? "text" : "password";
-});
+  document.getElementById("tab-pending").addEventListener("click", () => {
+    currentTab = "pending";
+    document.getElementById("tab-pending").classList.add("active");
+    document.getElementById("tab-approved").classList.remove("active");
+    loadApplications();
+  });
 
-// Просто обработка авторизации — пароль "авнкрутой"
-  const PASSWORD = "авнкрут";
+  document.getElementById("tab-approved").addEventListener("click", () => {
+    currentTab = "approved";
+    document.getElementById("tab-approved").classList.add("active");
+    document.getElementById("tab-pending").classList.remove("active");
+    loadApplications();
+  });
+
+  document.getElementById("togglePassword").addEventListener("click", () => {
+    const input = document.getElementById("password-input");
+    input.type = input.type === "password" ? "text" : "password";
+  });
 
   const authWrapper = document.getElementById("auth-wrapper");
   const adminContent = document.getElementById("admin-content");
@@ -353,28 +357,41 @@
   const btn = document.getElementById("submit-password");
   const errorDiv = document.getElementById("auth-error");
 
-  btn.addEventListener("click", () => {
-  const val = input.value.trim();
-  if (val === PASSWORD) {
-    authWrapper.style.display = "none";
-    adminContent.style.display = "block";
-    loadApplications();
-  } else {
-    errorDiv.textContent = "Неверный пароль!";
-    input.value = "";
-    input.focus();
-  }
-});
-
-  // Позволим Enter для удобства
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      btn.click();
+  btn.addEventListener("click", async () => {
+    const val = input.value.trim();
+    if (!val) {
+      errorDiv.textContent = "Введите пароль!";
+      return;
     }
+
+    try {
+      const adminDoc = await getDoc(doc(db, "settings", "admin"));
+      if (!adminDoc.exists()) {
+        errorDiv.textContent = "Пароль не настроен в базе";
+        return;
+      }
+      const storedPassword = adminDoc.data().password;
+
+      if (val === storedPassword) {
+        authWrapper.style.display = "none";
+        adminContent.style.display = "block";
+        errorDiv.textContent = "";
+        loadApplications();
+      } else {
+        errorDiv.textContent = "Неверный пароль!";
+        input.value = "";
+        input.focus();
+      }
+    } catch {
+      errorDiv.textContent = "Ошибка при проверке пароля";
+    }
+  });
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") btn.click();
   });
 </script>
 
 <script src="js/index.js"></script>
-
 </body>
 </html>
