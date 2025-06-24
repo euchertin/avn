@@ -7,7 +7,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/FuturaPT-Demi.woff') format('truetype');
+  src: url('../fonts/FuturaPT-Demi.ttf') format('truetype');
   font-style: normal;
 }
 
@@ -23,16 +23,7 @@ body, html {
   align-items: center;
 }
 
-/* Фиксированное меню */
-header {
-  width: 100%;
-  padding: 15px 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 10000;
-  font-family: 'Futura', sans-serif;
-}
+
 
 .container {
   width: 90%;
@@ -47,10 +38,6 @@ header {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-}
-
-.logo {
-  margin-right: 60px;
 }
 
 /* Контейнер для главного контента */
@@ -154,7 +141,6 @@ header {
 
 .country-flag {
   background-color: #333;
-  flex: 0 0 180px; /* фиксированная ширина */
   display: flex;
   justify-content: center;
   align-items: center; /* Центрируем картинку внутри */
@@ -170,6 +156,7 @@ header {
   height: auto;
   object-fit: contain;
   display: block;
+  border-radius: 12px;
 }
 
 .country-text {
@@ -195,40 +182,106 @@ header {
 
 /* Мобильная версия */
 @media (max-width: 768px) {
-  .country-block {
+  html, body {
+    font-size: 16px;
+    padding: 0;
+    margin: 0;
+  }
+
+  header {
+    padding: 10px 15px;
+  }
+
+  .container {
     flex-direction: column;
-    align-items: flex-start; /* В столбик выравнивание по левому краю */
+    align-items: stretch;
+    gap: 10px;
+    padding: 0 10px;
   }
 
-  .country-flag, .country-text {
+  .main-content {
+    margin-top: 80px;
+    padding: 10px 15px;
     width: 100%;
-    padding: 10px;
-    border-left: none;
   }
 
-  .country-flag {
-    margin-bottom: 10px;
-    flex: none;
-    max-height: 150px;
-  }
-
-  .country-flag img {
-    max-width: 100%;
-    max-height: 150px;
+  .search-container {
+    margin: 10px 0;
+    padding: 0 10px;
   }
 
   .search-wrapper {
     width: 100%;
-    max-width: 100%;
   }
 
   .search-input {
-    font-size: 16px;
-    padding: 8px 20px;
+    font-size: 15px;
+    padding: 8px 38px 8px 15px;
+    border-radius: 12px;
+  }
+
+  .search-button img {
+    width: 18px;
+    height: 18px;
   }
 
   .details-button {
-    font-size: 18px;
+    font-size: 15px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-top: 6px;
+  }
+
+  .country-list {
+    gap: 15px;
+    padding: 20px 10px 40px;
+  }
+
+  .country-block {
+    flex-direction: column;
+    background-color: #1f1f1f;
+    border-radius: 20px;
+    width: 100%;
+    padding: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .country-flag {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 10px;
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .country-flag img {
+    max-width: 100%;
+    max-height: 120px;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+
+  .country-text {
+    width: 100%;
+    padding: 0;
+    color: #fff;
+    background-color: transparent;
+    border-left: none;
+    font-size: 16px;
+  }
+
+  footer {
+    font-size: 14px;
+    padding: 15px;
+    text-align: center;
   }
 }
 
@@ -257,68 +310,6 @@ footer:after {
 }
 
 /* Основной CSS уже включён, изменения начинаются ниже */
-
-/* Мобильная адаптация */
-@media (max-width: 768px) {
-  body, html {
-    font-size: 18px;
-    padding: 0 10px;
-  }
-
-  header {
-    padding: 10px 0;
-  }
-
-  .container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .logo {
-    margin-right: 0;
-  }
-
-  .main-content {
-    margin-top: 70px;
-    padding: 10px;
-  }
-
-  .search-container {
-    margin: 10px 0;
-  }
-
-  .search-wrapper {
-    width: 100%;
-  }
-
-  .search-input {
-    font-size: 15px;
-    padding: 8px 38px 8px 15px;
-    border-radius: 12px;
-  }
-
-  .search-button img {
-    width: 18px;
-    height: 18px;
-  }
-
-  .details-button {
-    font-size: 16px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    margin-top: 8px;
-  }
-
-  .country-list {
-    gap: 15px;
-  }
-
-  .country-block {
-    padding: 15px;
-    border-radius: 20px;
-  }
-}
 
 /* Футер */
 footer {
