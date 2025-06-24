@@ -10,10 +10,10 @@
   font-style: normal;
 }
 
-body, html {
+html, body {
   font-family: 'Futura', sans-serif;
   font-size: 23px;
-  min-height: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
   overflow-y: auto;
@@ -40,6 +40,7 @@ header {
   justify-content: space-between;
 }
 
+/* Навигация */
 #navigation {
   display: flex;
   align-items: center;
@@ -48,23 +49,31 @@ header {
 }
 
 /* Контейнер для главного контента */
-.main-content {
-  margin-top: 80px;
-  overflow-y: auto;
-  padding: 20px;
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+  align-items: center;
+  padding-top: 80px; /* чтобы не залезать под фикс меню */
+  box-sizing: border-box;
 }
 
-/* Стили для поиска */
+/* Поиск */
 .search-container {
   display: flex;
   justify-content: center;
   margin: 20px 0;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 20; /* выше списка заявок */
 }
 
 .search-wrapper {
   position: relative;
   width: 100%;
-  max-width: 400px;
 }
 
 .search-input {
@@ -120,25 +129,27 @@ header {
   background-color: #999999;
 }
 
-/* Контейнер с странами */
+/* Список заявок (страны) */
 .country-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
   align-items: center;
   width: 100%;
+  max-width: 1000px;
   padding-top: 20px;
   padding-bottom: 50px;
+  position: relative;
+  z-index: 10; /* ниже поиска */
 }
 
-/* Блоки стран */
+/* Блок страны */
 .country-block {
   display: flex;
-  align-items: center; /* Центрируем по вертикали */
+  align-items: center;
   background-color: #222;
   border-radius: 30px;
   width: 100%;
-  max-width: 1000px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   padding: 20px;
   opacity: 0;
@@ -150,7 +161,7 @@ header {
   background-color: #333;
   display: flex;
   justify-content: center;
-  align-items: center; /* Центрируем картинку внутри */
+  align-items: center;
   padding: 10px;
   margin-right: 20px;
   border-radius: 20px;
@@ -158,7 +169,7 @@ header {
 }
 
 .country-flag img {
-  max-height: 120px; /* Максимальная высота */
+  max-height: 120px;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -175,7 +186,6 @@ header {
   font-family: 'Futura', sans-serif;
 }
 
-/* Анимации */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -191,8 +201,6 @@ header {
 @media (max-width: 768px) {
   html, body {
     font-size: 16px;
-    padding: 0;
-    margin: 0;
   }
 
   header {
@@ -206,10 +214,8 @@ header {
     padding: 0 10px;
   }
 
-  .main-content {
-    margin-top: 80px;
-    padding: 10px 15px;
-    width: 100%;
+  .main-wrapper {
+    padding-top: 80px;
   }
 
   .search-container {
@@ -242,12 +248,10 @@ header {
   .country-list {
     gap: 15px;
     padding: 20px 7% 40px;
-
   }
 
-  /* Мобильная адаптация блоков стран */
   .country-block {
-    flex-direction: column; /* вертикально: флаг сверху, текст под ним */
+    flex-direction: column;
     background-color: #1f1f1f;
     border-radius: 20px;
     width: 100%;
@@ -260,10 +264,9 @@ header {
   .country-flag {
     width: 100%;
     padding: 10px;
-    margin: 0 0 10px 0; /* отступ снизу для текста */
+    margin: 0 0 10px 0;
     background-color: #2a2a2a;
     border-radius: 20px;
-    
   }
 
   .country-flag img {
@@ -294,25 +297,15 @@ header {
 }
 
 /* Футер */
-
+footer {
+  margin-top: auto;
+}
 
 footer:after {
   display: block;
   height: 1px;
   width: 100%;
   background-color: #333;
-}
-
-/* Скрытие */
-.hidden {
-  display: none;
-}
-
-/* Основной CSS уже включён, изменения начинаются ниже */
-
-/* Футер */
-footer {
-  margin-top: auto; /* Отталкивает футер вниз */
 }
 
 .static-noise {
@@ -326,33 +319,8 @@ footer {
   background-size: auto;
 }
 
-/* Базовая настройка */
-html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Обёртка для контента и футера */
-.main-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  width: 100%;
-  min-height: 100vh;
-}
-
-/* Основной контент отталкивает футер */
-.main-content {
-  flex: 1;
-  padding: 20px;
-}
-
 .country-text p {
   white-space: normal;
   word-break: break-word;
   overflow-wrap: break-word;
 }
-
