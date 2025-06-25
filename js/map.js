@@ -1,10 +1,10 @@
-// Границы карты
+// --- КАРТА ---
+
 const worldBounds = L.latLngBounds(
   L.latLng(-85, -180),
   L.latLng(85, 180)
 );
 
-// Создаем карту с ограничениями
 const map = L.map('map', {
   maxBounds: worldBounds,
   maxBoundsViscosity: 0.7,
@@ -16,19 +16,14 @@ const map = L.map('map', {
   bubblingMouseEvents: false
 }).setView([30, 0], 3);
 
-// Добавляем тёмные тайлы в стиле ТНО (CartoDB DarkMatter)
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
   noWrap: true,
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   subdomains: 'abcd',
 }).addTo(map);
 
-// Добавляем кастомный zoom control
-L.control.zoom({
-  position: 'topright'
-}).addTo(map);
+L.control.zoom({ position: 'topright' }).addTo(map);
 
-// Иконка для маркеров
 const whiteMachineIcon = L.divIcon({
   className: 'custom-marker',
   html: '<div class="custom-marker-inner"></div>',
@@ -36,13 +31,10 @@ const whiteMachineIcon = L.divIcon({
   iconAnchor: [10, 10]
 });
 
-// Функция для создания содержимого popup с флагом
 function createPopupContent(feature) {
   if (!feature.properties) return "Нет данных";
 
   let content = "<div style='max-width:250px'>";
-
-  // Обработка флага
   content += "<div class='flag-container'>";
   if (feature.properties.flag) {
     content += `<img src="${feature.properties.flag}" class="flag-img" alt="Флаг" 
@@ -50,9 +42,9 @@ function createPopupContent(feature) {
   }
   content += "</div>";
 
-  // Добавляем остальные свойства
+  const ignoredKeys = ['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index'];
   const propsToShow = Object.keys(feature.properties)
-    .filter(k => !['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index'].includes(k));
+    .filter(k => !ignoredKeys.includes(k));
 
   if (propsToShow.length > 0) {
     content += '<div class="properties-list">';
@@ -67,25 +59,22 @@ function createPopupContent(feature) {
 }
 
 fetch('map (11).geojson')
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
     if (!data.features) throw new Error("GeoJSON has no features");
 
-    // Отсортировать полигоны по z-index
+    // Сортировка: сначала полигоны, потом точки, потом по z-index
     const sorted = [...data.features].sort((a, b) => {
       const aZ = a.properties?.['z-index'] ?? 0;
       const bZ = b.properties?.['z-index'] ?? 0;
-
-      // Сначала полигоны, потом точки
       const aIsPoint = a.geometry?.type === "Point";
       const bIsPoint = b.geometry?.type === "Point";
       if (aIsPoint && !bIsPoint) return 1;
       if (!aIsPoint && bIsPoint) return -1;
-
       return aZ - bZ;
     });
 
-    // Шаг 1: Найти для каждого fill его флаг и ключ-название
+    // Собираем имя и флаг по fill цвету
     const colorDataMap = {};
     const ignoredKeys = ['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index'];
 
@@ -93,26 +82,22 @@ fetch('map (11).geojson')
       if (feat.geometry.type === "Polygon" || feat.geometry.type === "MultiPolygon") {
         const props = feat.properties || {};
         const fillColor = props.fill;
-
         const customNameKey = Object.keys(props).find(k => !ignoredKeys.includes(k));
-        const name = customNameKey ? customNameKey : null;
         const flag = props.flag;
 
-        if (fillColor && (name || flag)) {
+        if (fillColor && (customNameKey || flag)) {
           if (!colorDataMap[fillColor]) colorDataMap[fillColor] = {};
-          if (name) colorDataMap[fillColor].nameKey = name;
+          if (customNameKey) colorDataMap[fillColor].nameKey = customNameKey;
           if (flag) colorDataMap[fillColor].flag = flag;
         }
       }
     }
 
-    // Шаг 2: Добавить недостающие названия/флаги другим объектам с тем же цветом
     for (const feat of sorted) {
       if (feat.geometry.type === "Polygon" || feat.geometry.type === "MultiPolygon") {
         const props = feat.properties || {};
         const fillColor = props.fill;
         const data = colorDataMap[fillColor];
-
         if (fillColor && data) {
           const hasCustomName = Object.keys(props).some(k => !ignoredKeys.includes(k));
           if (!hasCustomName && data.nameKey) {
@@ -125,22 +110,20 @@ fetch('map (11).geojson')
       }
     }
 
-    // Шаг 3: Обработка перекрытий
+    // Обработка перекрытий
     const processed = [];
 
     for (let i = 0; i < sorted.length; i++) {
       const current = sorted[i];
-
-      if (current.geometry.type !== "Polygon" && current.geometry.type !== "MultiPolygon") {
+      if (!["Polygon", "MultiPolygon"].includes(current.geometry.type)) {
         processed.push(current);
         continue;
       }
 
       let geom = current;
-
       for (let j = i + 1; j < sorted.length; j++) {
         const next = sorted[j];
-        if (next.geometry.type !== "Polygon" && next.geometry.type !== "MultiPolygon") continue;
+        if (!["Polygon", "MultiPolygon"].includes(next.geometry.type)) continue;
 
         try {
           const diff = turf.difference(geom, next);
@@ -149,8 +132,8 @@ fetch('map (11).geojson')
             geom = null;
             break;
           }
-        } catch (err) {
-          console.warn('Ошибка при difference:', err);
+        } catch (e) {
+          console.warn('Ошибка turf.difference:', e);
         }
       }
 
@@ -162,7 +145,6 @@ fetch('map (11).geojson')
       }
     }
 
-    // Отрисовка
     const markersLayer = L.layerGroup().addTo(map);
 
     L.geoJSON({ type: "FeatureCollection", features: processed }, {
@@ -202,15 +184,14 @@ fetch('map (11).geojson')
       }
     }).addTo(map);
   })
-  .catch(error => {
-    console.error("Loading error:", error);
-    document.getElementById('error').innerHTML =
-      `<b>Ошибка загрузки данных</b><br>${error.message}`;
+  .catch(err => {
+    console.error("Ошибка загрузки GeoJSON:", err);
+    document.getElementById('error').innerHTML = `<b>Ошибка загрузки данных</b><br>${err.message}`;
   });
 
+// --- ПЛЕЕР ---
 
-
-// Управление музыкой
+const audioPlayer = document.getElementById('audio-player');
 const playPauseBtn = document.getElementById('play-pause-btn');
 const prevBtn = document.getElementById('prev-btn');
 const nextBtn = document.getElementById('next-btn');
@@ -221,7 +202,6 @@ const progressBar = document.getElementById('progress-bar');
 const currentTimeEl = document.getElementById('current-time');
 const totalTimeEl = document.getElementById('total-time');
 const trackTitleEl = document.getElementById('track-title');
-const audioPlayer = document.getElementById('audio-player');
 const minimizeBtn = document.getElementById('minimize-btn');
 const playIcon = document.getElementById('play-icon');
 const pauseIcon = document.getElementById('pause-icon');
@@ -230,60 +210,47 @@ const volumeMuteIcon = document.getElementById('volume-mute');
 const expandIcon = document.getElementById('expand-icon');
 const collapseIcon = document.getElementById('collapse-icon');
 
-// Список всех треков с названиями
 const tracks = [
-  { 
-    element: document.getElementById('track1'), 
-    title: "TNO OST - Toolbox Theory" 
-  },
-  { 
-    element: document.getElementById('track2'), 
-    title: "The New Order: Russian Fairytale" 
-  },
-  { 
-    element: document.getElementById('track3'), 
-    title: "Half-Life 2: Particle Ghost (Remix)" 
-  },
-  { 
-    element: document.getElementById('track4'), 
-    title: "TNO OST - Burgundian Lullaby" 
-  },
-  { 
-    element: document.getElementById('track5'), 
-    title: "TNO OST - Between the Bombings" 
-  }
+  { src: "TNO OST - Toolbox Theory.mp3", title: "TNO OST - Toolbox Theory" },
+  { src: "The New Order_ Last Days of Europe - Russian Fairytale.mp3", title: "The New Order: Russian Fairytale" },
+  { src: "Half-Life 2_ Overcharged - Particle Ghost (Remix).mp3", title: "Half-Life 2: Particle Ghost (Remix)" },
+  { src: "TNO OST - Burgundian Lullaby.mp3", title: "TNO OST - Burgundian Lullaby" },
+  { src: "The New Order - TNO OST_ Between the Bombings.mp3", title: "TNO OST - Between the Bombings" }
 ];
 
+const audio = new Audio();
 let currentTrackIndex = Math.floor(Math.random() * tracks.length);
 let isPlaying = false;
 let isDraggingProgress = false;
 let wasPlayingBeforeDrag = false;
 
-// Форматирование времени (минуты:секунды)
+// Формат времени мм:сс
 function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
-// Обновление информации о треке
+// Обновляем UI трека
 function updateTrackInfo() {
-  const track = tracks[currentTrackIndex];
-  trackTitleEl.textContent = track.title;
-  totalTimeEl.textContent = formatTime(track.element.duration || 0);
+  trackTitleEl.textContent = tracks[currentTrackIndex].title;
+  totalTimeEl.textContent = formatTime(audio.duration || 0);
 }
 
-// Обновление прогресса воспроизведения
+// Обновляем прогресс с throttle ~10fps
+let lastProgressUpdate = 0;
 function updateProgress() {
   if (isDraggingProgress) return;
-  
-  const track = tracks[currentTrackIndex].element;
-  const progress = (track.currentTime / track.duration) * 100;
-  progressBar.style.width = `${progress}%`;
-  currentTimeEl.textContent = formatTime(track.currentTime);
+  const now = performance.now();
+  if (now - lastProgressUpdate < 100) return;
+  lastProgressUpdate = now;
+
+  const progress = (audio.currentTime / audio.duration) * 100 || 0;
+  progressBar.style.width = progress + '%';
+  currentTimeEl.textContent = formatTime(audio.currentTime || 0);
 }
 
-// Обновление состояния кнопки воспроизведения
+// Обновляем кнопки Play/Pause
 function updatePlayPauseButton() {
   if (isPlaying) {
     playIcon.style.display = 'none';
@@ -294,10 +261,9 @@ function updatePlayPauseButton() {
   }
 }
 
-// Обновление состояния кнопки громкости
+// Обновляем иконку громкости
 function updateVolumeButton() {
-  const volume = tracks[currentTrackIndex].element.volume;
-  if (volume === 0) {
+  if (audio.volume === 0) {
     volumeHighIcon.style.display = 'none';
     volumeMuteIcon.style.display = 'block';
   } else {
@@ -308,209 +274,179 @@ function updateVolumeButton() {
 
 // Воспроизведение трека
 function playTrack() {
-  // Останавливаем все треки
-  tracks.forEach(t => {
-    t.element.pause();
-    t.element.currentTime = 0;
+  audio.src = tracks[currentTrackIndex].src;
+  audio.play().then(() => {
+    isPlaying = true;
+    updatePlayPauseButton();
+    updateTrackInfo();
+    updateVolumeButton();
+  }).catch(err => {
+    console.error("Ошибка воспроизведения:", err);
+    playNextTrack();
   });
-  
-  // Воспроизводим текущий трек
-  const track = tracks[currentTrackIndex].element;
-  track.play()
-    .then(() => {
-      isPlaying = true;
-      updatePlayPauseButton();
-      updateTrackInfo();
-      updateVolumeButton();
-    })
-    .catch(error => {
-      console.error("Playback failed:", error);
-      // Пытаемся воспроизвести следующий трек при ошибке
-      playNextTrack();
-    });
 }
 
-// Воспроизведение следующего трека
+// Следующий трек
 function playNextTrack() {
   currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
   playTrack();
 }
 
-// Воспроизведение предыдущего трека
+// Предыдущий трек
 function playPrevTrack() {
-  const track = tracks[currentTrackIndex].element;
-  // Если трек играет больше 3 секунд, перезапускаем его
-  if (track.currentTime > 3) {
-    track.currentTime = 0;
+  if (audio.currentTime > 3) {
+    audio.currentTime = 0;
     updateProgress();
   } else {
-    // Иначе переключаем на предыдущий трек
     currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
     playTrack();
   }
 }
 
-// Переключение воспроизведения/паузы
+// Пауза/Воспроизведение
 function togglePlayPause() {
-  const track = tracks[currentTrackIndex].element;
   if (isPlaying) {
-    track.pause();
+    audio.pause();
     isPlaying = false;
   } else {
-    track.play()
-      .then(() => {
-        isPlaying = true;
-      })
-      .catch(error => {
-        console.error("Playback failed:", error);
-      });
+    audio.play().then(() => {
+      isPlaying = true;
+    }).catch(console.error);
   }
   updatePlayPauseButton();
 }
 
 // Установка громкости
-function setVolume(volume) {
-  volume = Math.max(0, Math.min(1, volume));
-  tracks.forEach(t => t.element.volume = volume);
-  volumeSlider.value = volume;
+function setVolume(vol) {
+  vol = Math.min(Math.max(vol, 0), 1);
+  audio.volume = vol;
+  volumeSlider.value = vol;
   updateVolumeButton();
-  
-  // Сохраняем громкость в localStorage
-  localStorage.setItem('playerVolume', volume);
+  localStorage.setItem('playerVolume', vol);
 }
 
-// Перемотка трека
+// Перемотка
 function seekTo(event) {
   if (!isDraggingProgress) return;
-  
-  const track = tracks[currentTrackIndex].element;
   const rect = progressContainer.getBoundingClientRect();
-  const pos = (event.clientX - rect.left) / rect.width;
-  track.currentTime = pos * track.duration;
+  let pos = 0;
+
+  if (event.touches) {
+    pos = (event.touches[0].clientX - rect.left) / rect.width;
+  } else {
+    pos = (event.clientX - rect.left) / rect.width;
+  }
+
+  pos = Math.min(Math.max(pos, 0), 1);
+  audio.currentTime = pos * audio.duration;
   updateProgress();
 }
 
-// Обработчики событий
-playPauseBtn.addEventListener('click', togglePlayPause);
-prevBtn.addEventListener('click', playPrevTrack);
-nextBtn.addEventListener('click', playNextTrack);
+// Обработчики
 
-volumeBtn.addEventListener('click', () => {
-  const currentVolume = tracks[currentTrackIndex].element.volume;
-  setVolume(currentVolume === 0 ? 0.5 : 0);
-});
+playPauseBtn.onclick = togglePlayPause;
+prevBtn.onclick = playPrevTrack;
+nextBtn.onclick = playNextTrack;
+volumeBtn.onclick = () => setVolume(audio.volume === 0 ? 0.5 : 0);
+volumeSlider.oninput = (e) => setVolume(parseFloat(e.target.value));
 
-volumeSlider.addEventListener('input', (e) => {
-  setVolume(parseFloat(e.target.value));
-});
-
-progressContainer.addEventListener('mousedown', (e) => {
+progressContainer.onmousedown = (e) => {
   isDraggingProgress = true;
   wasPlayingBeforeDrag = isPlaying;
   if (isPlaying) {
-    tracks[currentTrackIndex].element.pause();
+    audio.pause();
     isPlaying = false;
     updatePlayPauseButton();
   }
   seekTo(e);
-});
 
-document.addEventListener('mousemove', (e) => {
-  if (isDraggingProgress) {
-    seekTo(e);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+};
+
+function onMouseMove(e) {
+  if (isDraggingProgress) seekTo(e);
+}
+
+function onMouseUp() {
+  if (!isDraggingProgress) return;
+  isDraggingProgress = false;
+  if (wasPlayingBeforeDrag) {
+    audio.play().then(() => {
+      isPlaying = true;
+      updatePlayPauseButton();
+    }).catch(console.error);
   }
-});
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mouseup', onMouseUp);
+}
 
-document.addEventListener('mouseup', () => {
-  if (isDraggingProgress) {
-    isDraggingProgress = false;
-    if (wasPlayingBeforeDrag) {
-      tracks[currentTrackIndex].element.play()
-        .then(() => {
-          isPlaying = true;
-          updatePlayPauseButton();
-        })
-        .catch(error => {
-          console.error("Playback failed:", error);
-        });
-    }
-  }
-});
-
-// Для мобильных устройств
-progressContainer.addEventListener('touchstart', (e) => {
+progressContainer.ontouchstart = (e) => {
   isDraggingProgress = true;
   wasPlayingBeforeDrag = isPlaying;
   if (isPlaying) {
-    tracks[currentTrackIndex].element.pause();
+    audio.pause();
     isPlaying = false;
     updatePlayPauseButton();
   }
   seekTo(e.touches[0]);
-});
 
-document.addEventListener('touchmove', (e) => {
+  document.addEventListener('touchmove', onTouchMove, { passive: false });
+  document.addEventListener('touchend', onTouchEnd);
+};
+
+function onTouchMove(e) {
   if (isDraggingProgress) {
     seekTo(e.touches[0]);
+    e.preventDefault();
   }
-});
+}
 
-document.addEventListener('touchend', () => {
-  if (isDraggingProgress) {
-    isDraggingProgress = false;
-    if (wasPlayingBeforeDrag) {
-      tracks[currentTrackIndex].element.play()
-        .then(() => {
-          isPlaying = true;
-          updatePlayPauseButton();
-        })
-        .catch(error => {
-          console.error("Playback failed:", error);
-        });
-    }
+function onTouchEnd() {
+  if (!isDraggingProgress) return;
+  isDraggingProgress = false;
+  if (wasPlayingBeforeDrag) {
+    audio.play().then(() => {
+      isPlaying = true;
+      updatePlayPauseButton();
+    }).catch(console.error);
   }
-});
+  document.removeEventListener('touchmove', onTouchMove);
+  document.removeEventListener('touchend', onTouchEnd);
+}
 
-minimizeBtn.addEventListener('click', () => {
+minimizeBtn.onclick = () => {
   audioPlayer.classList.toggle('minimized');
   audioPlayer.classList.toggle('expanded');
   expandIcon.style.display = audioPlayer.classList.contains('minimized') ? 'block' : 'none';
   collapseIcon.style.display = audioPlayer.classList.contains('minimized') ? 'none' : 'block';
-});
+};
 
-// Обработчики событий для треков
-tracks.forEach((track, index) => {
-  track.element.addEventListener('ended', playNextTrack);
-  track.element.addEventListener('timeupdate', updateProgress);
-  track.element.addEventListener('loadedmetadata', updateTrackInfo);
-  track.element.addEventListener('error', (e) => {
-    console.error(`Track ${index} error:`, e);
-    // Пытаемся воспроизвести следующий трек при ошибке
-    playNextTrack();
-  });
+// События аудио
+audio.addEventListener('ended', playNextTrack);
+audio.addEventListener('timeupdate', updateProgress);
+audio.addEventListener('loadedmetadata', updateTrackInfo);
+audio.addEventListener('error', err => {
+  console.error("Ошибка трека:", err);
+  playNextTrack();
 });
 
 // Загрузка сохранённой громкости
 const savedVolume = localStorage.getItem('playerVolume');
-if (savedVolume !== null) {
-  setVolume(parseFloat(savedVolume));
-} else {
-  setVolume(0.5); // Громкость по умолчанию 50%
-}
+setVolume(savedVolume !== null ? parseFloat(savedVolume) : 0.5);
 
-// Автоматическое воспроизведение при взаимодействии с страницей
+// Автовоспроизведение при первом взаимодействии с пользователем
 function handleFirstInteraction() {
-  if (!isPlaying) {
-    playTrack();
-  }
+  if (!isPlaying) playTrack();
   document.removeEventListener('click', handleFirstInteraction);
   document.removeEventListener('keydown', handleFirstInteraction);
   document.removeEventListener('touchstart', handleFirstInteraction);
 }
-
 document.addEventListener('click', handleFirstInteraction);
 document.addEventListener('keydown', handleFirstInteraction);
 document.addEventListener('touchstart', handleFirstInteraction);
 
-// Инициализация информации о треке
+// Начальное обновление UI
 updateTrackInfo();
+updatePlayPauseButton();
+updateVolumeButton();
