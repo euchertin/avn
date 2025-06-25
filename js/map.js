@@ -1,296 +1,358 @@
-// js/map.js - оптимизация
+const worldBounds = L.latLngBounds([-85, -180], [85, 180]);
 
-(() => {
-  const ignoredProps = new Set(['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index']);
+const map = L.map('map', {
+  maxBounds: worldBounds,
+  maxBoundsViscosity: 0.7,
+  minZoom: 3,
+  maxZoom: 18,
+  worldCopyJump: false,
+  zoomControl: false,
+  tap: false,
+  bubblingMouseEvents: false
+}).setView([30, 0], 3);
 
-  // Границы карты
-  const worldBounds = L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180));
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+  noWrap: true,
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  subdomains: 'abcd'
+}).addTo(map);
 
-  const map = L.map('map', {
-    maxBounds: worldBounds,
-    maxBoundsViscosity: 0.7,
-    minZoom: 3,
-    maxZoom: 18,
-    worldCopyJump: false,
-    zoomControl: false,
-    tap: false,
-    bubblingMouseEvents: false
-  }).setView([30, 0], 3);
+L.control.zoom({ position: 'topright' }).addTo(map);
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-    noWrap: true,
-    attribution: '© OpenStreetMap',
-    subdomains: 'abcd',
-  }).addTo(map);
+const whiteMachineIcon = L.divIcon({
+  className: 'custom-marker',
+  html: '<div class="custom-marker-inner"></div>',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10]
+});
 
-  L.control.zoom({ position: 'topright' }).addTo(map);
+const ignoredProps = new Set(['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index']);
 
-  const whiteMachineIcon = L.divIcon({
-    className: 'custom-marker',
-    html: '<div class="custom-marker-inner"></div>',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
+function createPopupContent({ properties }) {
+  if (!properties) return "Нет данных";
+  let flagHtml = properties.flag
+    ? `<img src="${properties.flag}" class="flag-img" alt="Флаг" onerror="this.parentNode.innerHTML='<div class=\\'no-flag\\'>Флаг не загружен</div>'">`
+    : '';
+  let content = `<div style="max-width:250px"><div class="flag-container">${flagHtml}</div><div class="properties-list">`;
+  for (const [k, v] of Object.entries(properties)) {
+    if (!ignoredProps.has(k)) content += `<div><b>${k}</b> ${v || ''}</div>`;
+  }
+  return content + '</div></div>';
+}
+
+// Получаем функции из глобального turf
+const difference = turf.difference;
+const booleanIntersects = turf.booleanIntersects;
+
+fetch('map (11).geojson')
+  .then(r => r.json())
+  .then(({ features }) => {
+    if (!features) throw new Error("GeoJSON has no features");
+
+    // Сортируем точки в конец, полигоны в начало + сортируем по z-index (возрастание)
+    features.sort((a, b) => {
+      const aIsPoint = a.geometry?.type === "Point";
+      const bIsPoint = b.geometry?.type === "Point";
+      if (aIsPoint !== bIsPoint) return aIsPoint ? 1 : -1;
+
+      const aZ = a.properties?.['z-index'] || 0;
+      const bZ = b.properties?.['z-index'] || 0;
+      return aZ - bZ;
+    });
+
+    // Быстрая агрегация данных по fill для наследования nameKey и flag
+    const colorData = {};
+    for (const f of features) {
+      if (!['Polygon', 'MultiPolygon'].includes(f.geometry?.type)) continue;
+      const { fill, flag, ...rest } = f.properties || {};
+      if (!fill) continue;
+      if (!colorData[fill]) colorData[fill] = { nameKey: null, flag: null };
+      if (!colorData[fill].nameKey) {
+        const nameKey = Object.keys(rest).find(k => !ignoredProps.has(k));
+        colorData[fill].nameKey = nameKey || null;
+      }
+      if (!colorData[fill].flag && flag) colorData[fill].flag = flag;
+    }
+
+    for (const f of features) {
+      if (!['Polygon', 'MultiPolygon'].includes(f.geometry?.type)) continue;
+      const p = f.properties || {};
+      const d = colorData[p.fill];
+      if (!d) continue;
+      if (!Object.keys(p).some(k => !ignoredProps.has(k)) && d.nameKey) p[d.nameKey] = '';
+      if (!p.flag && d.flag) p.flag = d.flag;
+    }
+
+    // Разделяем полигоны и точки
+    const polygons = features.filter(f => ['Polygon', 'MultiPolygon'].includes(f.geometry?.type));
+    const points = features.filter(f => f.geometry?.type === 'Point');
+
+    const clippedPolygons = [];
+
+    for (let i = 0; i < polygons.length; i++) {
+      let basePoly = polygons[i];
+      let clippedGeom = basePoly.geometry;
+
+      // Обрезаем сверху наложенные полигоны с большим z-index
+      for (let j = i + 1; j < polygons.length; j++) {
+        const topPoly = polygons[j];
+
+        if (booleanIntersects(clippedGeom, topPoly.geometry)) {
+          try {
+            const diff = difference({ type: 'Feature', geometry: clippedGeom }, topPoly);
+            if (diff && diff.geometry) {
+              clippedGeom = diff.geometry;
+            } else {
+              // Полностью закрыт сверху — не рисуем
+              clippedGeom = null;
+              break;
+            }
+          } catch (e) {
+            console.warn('Ошибка turf.difference, пропускаем:', e);
+            // При ошибке оставляем текущий полигон без изменений
+          }
+        }
+      }
+      if (clippedGeom) {
+        clippedPolygons.push({
+          ...basePoly,
+          geometry: clippedGeom
+        });
+      }
+    }
+
+    // Объединяем обрезанные полигоны и точки
+    const processed = [...clippedPolygons, ...points];
+
+    const markersLayer = L.layerGroup().addTo(map);
+
+    L.geoJSON({ type: "FeatureCollection", features: processed }, {
+      pointToLayer: (feature, latlng) => {
+        const marker = L.marker(latlng, { icon: whiteMachineIcon, bubblingMouseEvents: false });
+        marker.bindPopup(createPopupContent(feature), { maxWidth: 300, minWidth: 150, className: 'dark-popup' });
+        markersLayer.addLayer(marker);
+        return marker;
+      },
+      style: ({ properties }) => ({
+        stroke: true,
+        color: properties['stroke'] || '#555',
+        weight: +properties['stroke-width'] || 2,
+        opacity: +properties['stroke-opacity'] || 0.8,
+        fill: true,
+        fillColor: properties['fill'] || '#333',
+        fillOpacity: +properties['fill-opacity'] || 0.5
+      }),
+      onEachFeature: (feature, layer) => {
+        if (feature.geometry.type !== 'Point')
+          layer.bindPopup(createPopupContent(feature), { maxWidth: 300, minWidth: 150, className: 'dark-popup' });
+      }
+    }).addTo(map);
+
+  })
+  .catch(err => {
+    console.error("Loading error:", err);
+    document.getElementById('error').innerHTML = `<b>Ошибка загрузки данных</b><br>${err.message}`;
   });
 
-  function createPopupContent(feature) {
-    if (!feature?.properties) return 'Нет данных';
-    let html = `<div style="max-width:250px"><div class="flag-container">`;
-    if (feature.properties.flag) {
-      html += `<img src="${feature.properties.flag}" loading="lazy" alt="Флаг" class="flag-img" onerror="this.parentNode.innerHTML='<div class=\\'no-flag\\'>Флаг не загружен</div>'">`;
-    }
-    html += `</div><div class="properties-list">`;
+// === Аудиоплеер (твой оригинальный код, без изменений) ===
 
-    for (const [key, value] of Object.entries(feature.properties)) {
-      if (!ignoredProps.has(key)) {
-        html += `<div><b>${key}</b> ${value || ''}</div>`;
-      }
-    }
-    return html + '</div></div>';
-  }
+const $ = id => document.getElementById(id);
 
-  async function loadAndRenderGeoJSON() {
-    try {
-      const response = await fetch('map (11).geojson');
-      if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
-      const data = await response.json();
+const audioPlayer = $('audio-player'),
+  playPauseBtn = $('play-pause-btn'),
+  prevBtn = $('prev-btn'),
+  nextBtn = $('next-btn'),
+  volumeBtn = $('volume-btn'),
+  volumeSlider = $('volume-slider'),
+  progressContainer = $('progress-container'),
+  progressBar = $('progress-bar'),
+  currentTimeEl = $('current-time'),
+  totalTimeEl = $('total-time'),
+  trackTitleEl = $('track-title'),
+  minimizeBtn = $('minimize-btn'),
+  playIcon = $('play-icon'),
+  pauseIcon = $('pause-icon'),
+  volumeHighIcon = $('volume-high'),
+  volumeMuteIcon = $('volume-mute'),
+  expandIcon = $('expand-icon'),
+  collapseIcon = $('collapse-icon');
 
-      if (!data.features || !data.features.length) throw new Error('Нет данных в GeoJSON');
+const tracks = [
+  { element: $('track1'), title: "TNO OST - Toolbox Theory" },
+  { element: $('track2'), title: "The New Order: Russian Fairytale" },
+  { element: $('track3'), title: "Half-Life 2: Particle Ghost (Remix)" },
+  { element: $('track4'), title: "TNO OST - Burgundian Lullaby" },
+  { element: $('track5'), title: "TNO OST - Between the Bombings" }
+];
 
-      // Сортируем: точки в конец, полигоны в начало, по z-index
-      const sortedFeatures = [...data.features].sort((a, b) => {
-        const aZ = a.properties?.['z-index'] || 0;
-        const bZ = b.properties?.['z-index'] || 0;
-        const aIsPoint = a.geometry?.type === 'Point';
-        const bIsPoint = b.geometry?.type === 'Point';
-        if (aIsPoint && !bIsPoint) return 1;
-        if (!aIsPoint && bIsPoint) return -1;
-        return aZ - bZ;
-      });
+let currentTrackIndex = Math.floor(Math.random() * tracks.length),
+  isPlaying = false,
+  isDragging = false,
+  wasPlaying = false;
 
-      // Упрощение: обрабатываем полигоны — разность (turf.difference), исключая наложения
-      let processedPolygons = [];
-      for (let i = 0; i < sortedFeatures.length; i++) {
-        const f = sortedFeatures[i];
-        if (f.geometry?.type.includes('Polygon')) {
-          let geom = f.geometry;
-          for (let j = i + 1; j < sortedFeatures.length; j++) {
-            const next = sortedFeatures[j];
-            if (next.geometry?.type.includes('Polygon')) {
-              try {
-                const diff = turf.difference(geom, next.geometry);
-                if (!diff) {
-                  geom = null;
-                  break;
-                }
-                geom = diff.geometry;
-              } catch {
-                // игнорируем ошибки turf.difference
-              }
-            }
-          }
-          if (geom) {
-            processedPolygons.push({...f, geometry: geom});
-          }
-        }
-      }
+const formatTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
-      // Добавляем обратно точки после полигона
-      const points = sortedFeatures.filter(f => f.geometry?.type === 'Point');
-      const finalFeatures = [...processedPolygons, ...points];
+function updateTrackInfo() {
+  const t = tracks[currentTrackIndex].element;
+  trackTitleEl.textContent = tracks[currentTrackIndex].title;
+  totalTimeEl.textContent = isNaN(t.duration) ? '0:00' : formatTime(t.duration);
+}
 
-      // Создаем слой GeoJSON с поэтапным рендерингом
-      const batchSize = 50;
-      let index = 0;
+function updateProgress() {
+  if (isDragging) return;
+  const t = tracks[currentTrackIndex].element;
+  if (!t.duration) return;
+  progressBar.style.width = `${(t.currentTime / t.duration) * 100}%`;
+  currentTimeEl.textContent = formatTime(t.currentTime);
+}
 
-      function addBatch() {
-        const batch = finalFeatures.slice(index, index + batchSize);
-        L.geoJSON(batch, {
-          pointToLayer: (feature, latlng) => {
-            const marker = L.marker(latlng, { icon: whiteMachineIcon });
-            marker.bindPopup(createPopupContent(feature), { className: 'dark-popup', maxWidth: 300 });
-            return marker;
-          },
-          style: feature => {
-            const p = feature.properties || {};
-            return {
-              color: p.stroke || '#555',
-              weight: Number(p['stroke-width']) || 2,
-              opacity: Number(p['stroke-opacity']) || 0.8,
-              fillColor: p.fill || '#333',
-              fillOpacity: Number(p['fill-opacity']) || 0.5
-            };
-          },
-          onEachFeature: (feature, layer) => {
-            if (feature.geometry?.type !== 'Point') {
-              layer.bindPopup(createPopupContent(feature), { className: 'dark-popup', maxWidth: 300 });
-            }
-          }
-        }).addTo(map);
+function updatePlayPauseBtn() {
+  playIcon.style.display = isPlaying ? 'none' : 'block';
+  pauseIcon.style.display = isPlaying ? 'block' : 'none';
+}
 
-        index += batchSize;
-        if (index < finalFeatures.length) {
-          requestIdleCallback(addBatch);
-        }
-      }
-      addBatch();
+function updateVolumeBtn() {
+  const v = tracks[currentTrackIndex].element.volume;
+  volumeHighIcon.style.display = v > 0 ? 'block' : 'none';
+  volumeMuteIcon.style.display = v > 0 ? 'none' : 'block';
+}
 
-    } catch (err) {
-      console.error(err);
-      const errDiv = document.getElementById('error');
-      errDiv.style.visibility = 'visible';
-      errDiv.innerHTML = `<b>Ошибка загрузки данных карты:</b><br>${err.message}`;
-    }
-  }
+function setVolume(v) {
+  v = Math.min(Math.max(v, 0), 1);
+  tracks.forEach(t => {
+    t.element.volume = v;
+  });
+  volumeSlider.value = v;
+  updateVolumeBtn();
+  localStorage.setItem('playerVolume', v);
+}
 
-  loadAndRenderGeoJSON();
-})();
-// js/index.js - оптимизация аудиоплеера
-
-(() => {
-  const player = document.getElementById('audio-player');
-  const playPauseBtn = document.getElementById('play-pause-btn');
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
-  const trackTitle = document.getElementById('track-title');
-  const currentTimeElem = document.getElementById('current-time');
-  const totalTimeElem = document.getElementById('total-time');
-  const progressBar = document.getElementById('progress-bar');
-  const progressContainer = document.getElementById('progress-container');
-  const volumeBtn = document.getElementById('volume-btn');
-  const volumeSlider = document.getElementById('volume-slider');
-  const minimizeBtn = document.getElementById('minimize-btn');
-
-  const tracks = [
-    document.getElementById('track1'),
-    document.getElementById('track2'),
-    document.getElementById('track3'),
-    document.getElementById('track4'),
-    document.getElementById('track5')
-  ];
-
-  let currentTrackIndex = 0;
-  let isPlaying = false;
-
-  function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-  }
-
-  function loadTrack(index) {
-    if (index < 0) index = tracks.length - 1;
-    else if (index >= tracks.length) index = 0;
-
-    if (currentTrackIndex !== index) {
-      pauseTrack();
-      currentTrackIndex = index;
-      updateUIForTrack();
-      playTrack();
-    }
-  }
-
-  function updateUIForTrack() {
-    const track = tracks[currentTrackIndex];
-    trackTitle.textContent = track.src.split('/').pop() || 'Без названия';
-
-    // Обновим длительность после метаданных
-    track.onloadedmetadata = () => {
-      totalTimeElem.textContent = formatTime(track.duration);
-    };
-  }
-
-  function playTrack() {
-    const track = tracks[currentTrackIndex];
-    track.play();
+async function playTrack() {
+  tracks.forEach(t => {
+    t.element.pause();
+    t.element.currentTime = 0;
+  });
+  const t = tracks[currentTrackIndex].element;
+  try {
+    await t.play();
     isPlaying = true;
-    togglePlayPauseIcon();
+    updatePlayPauseBtn();
+    updateTrackInfo();
+    updateVolumeBtn();
+  } catch {
+    playNextTrack();
   }
+}
 
-  function pauseTrack() {
-    const track = tracks[currentTrackIndex];
-    track.pause();
+function playNextTrack() {
+  currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+  playTrack();
+}
+
+function playPrevTrack() {
+  const t = tracks[currentTrackIndex].element;
+  if (t.currentTime > 3) {
+    t.currentTime = 0;
+    updateProgress();
+  } else {
+    currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+    playTrack();
+  }
+}
+
+async function togglePlayPause() {
+  const t = tracks[currentTrackIndex].element;
+  if (isPlaying) {
+    t.pause();
     isPlaying = false;
-    togglePlayPauseIcon();
-  }
-
-  function togglePlayPause() {
-    if (isPlaying) pauseTrack();
-    else playTrack();
-  }
-
-  function togglePlayPauseIcon() {
-    const playIcon = document.getElementById('play-icon');
-    const pauseIcon = document.getElementById('pause-icon');
-    if (isPlaying) {
-      playIcon.style.display = 'none';
-      pauseIcon.style.display = 'inline';
-    } else {
-      playIcon.style.display = 'inline';
-      pauseIcon.style.display = 'none';
+  } else {
+    try {
+      await t.play();
+      isPlaying = true;
+    } catch (e) {
+      console.error('Ошибка воспроизведения:', e);
     }
   }
+  updatePlayPauseBtn();
+}
 
-  function updateProgress() {
-    const track = tracks[currentTrackIndex];
-    const current = track.currentTime;
-    const duration = track.duration || 1;
-    const percent = (current / duration) * 100;
-    progressBar.style.width = `${percent}%`;
-    currentTimeElem.textContent = formatTime(current);
+function seekTo(e) {
+  if (!isDragging) return;
+  const t = tracks[currentTrackIndex].element;
+  const rect = progressContainer.getBoundingClientRect();
+  const pos = (e.clientX - rect.left) / rect.width;
+  t.currentTime = Math.min(Math.max(pos, 0), 1) * t.duration;
+  updateProgress();
+}
+
+function onSeekStart(e) {
+  isDragging = true;
+  wasPlaying = isPlaying;
+  if (isPlaying) {
+    tracks[currentTrackIndex].element.pause();
+    isPlaying = false;
+    updatePlayPauseBtn();
   }
+  seekTo(e);
+}
 
-  function setProgress(e) {
-    const width = this.clientWidth;
-    const clickX = e.offsetX;
-    const track = tracks[currentTrackIndex];
-    const duration = track.duration || 1;
-    track.currentTime = (clickX / width) * duration;
+function onSeekEnd() {
+  if (!isDragging) return;
+  isDragging = false;
+  if (wasPlaying) {
+    tracks[currentTrackIndex].element.play().then(() => {
+      isPlaying = true;
+      updatePlayPauseBtn();
+    }).catch(e => {
+      console.error('Ошибка воспроизведения после seek:', e);
+    });
   }
+}
 
-  function toggleVolume() {
-    const track = tracks[currentTrackIndex];
-    if (track.muted) {
-      track.muted = false;
-      volumeSlider.value = track.volume;
-      volumeBtn.querySelector('#volume-high').style.display = 'inline';
-      volumeBtn.querySelector('#volume-mute').style.display = 'none';
-    } else {
-      track.muted = true;
-      volumeSlider.value = 0;
-      volumeBtn.querySelector('#volume-high').style.display = 'none';
-      volumeBtn.querySelector('#volume-mute').style.display = 'inline';
-    }
-  }
+playPauseBtn.onclick = togglePlayPause;
+prevBtn.onclick = playPrevTrack;
+nextBtn.onclick = playNextTrack;
 
-  function setVolume(e) {
-    const volume = parseFloat(e.target.value);
-    const track = tracks[currentTrackIndex];
-    track.volume = volume;
-    track.muted = volume === 0;
-    volumeBtn.querySelector('#volume-high').style.display = volume === 0 ? 'none' : 'inline';
-    volumeBtn.querySelector('#volume-mute').style.display = volume === 0 ? 'inline' : 'none';
-  }
+volumeBtn.onclick = () => {
+  const v = tracks[currentTrackIndex].element.volume;
+  setVolume(v === 0 ? 0.5 : 0);
+};
 
-  function playNext() {
-    loadTrack(currentTrackIndex + 1);
-  }
+volumeSlider.oninput = e => setVolume(+e.target.value);
 
-  function playPrev() {
-    loadTrack(currentTrackIndex - 1);
-  }
+progressContainer.onmousedown = onSeekStart;
+document.onmousemove = e => { if (isDragging) seekTo(e); };
+document.onmouseup = onSeekEnd;
 
-  // События
-  playPauseBtn.addEventListener('click', togglePlayPause);
-  nextBtn.addEventListener('click', playNext);
-  prevBtn.addEventListener('click', playPrev);
-  tracks.forEach(track => {
-    track.addEventListener('timeupdate', updateProgress);
-    track.addEventListener('ended', playNext);
+progressContainer.ontouchstart = e => onSeekStart(e.touches[0]);
+document.ontouchmove = e => { if (isDragging) seekTo(e.touches[0]); };
+document.ontouchend = onSeekEnd;
+
+minimizeBtn.onclick = () => {
+  audioPlayer.classList.toggle('minimized');
+  audioPlayer.classList.toggle('expanded');
+  const minimized = audioPlayer.classList.contains('minimized');
+  expandIcon.style.display = minimized ? 'block' : 'none';
+  collapseIcon.style.display = minimized ? 'none' : 'block';
+};
+
+tracks.forEach(({ element }, i) => {
+  element.addEventListener('ended', playNextTrack);
+  element.addEventListener('timeupdate', updateProgress);
+  element.addEventListener('loadedmetadata', updateTrackInfo);
+  element.addEventListener('error', e => {
+    console.error(`Ошибка трека ${i}:`, e);
+    playNextTrack();
   });
-  progressContainer.addEventListener('click', setProgress);
-  volumeBtn.addEventListener('click', toggleVolume);
-  volumeSlider.addEventListener('input', setVolume);
+});
 
-  // Загрузка первого трека
-  loadTrack(currentTrackIndex);
-})();
+setVolume(parseFloat(localStorage.getItem('playerVolume')) || 0.5);
+
+function autoPlayOnInteraction() {
+  if (!isPlaying) playTrack();
+  ['click', 'keydown', 'touchstart'].forEach(e => document.removeEventListener(e, autoPlayOnInteraction));
+}
+
+['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, autoPlayOnInteraction));
+
+updateTrackInfo();
