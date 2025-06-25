@@ -1,62 +1,54 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Карта | АВН</title>
-
-  <!-- Futura с font-display: swap -->
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="icon" type="image/x-icon" href="logo.svg">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
   <style>
-    @font-face {
+     @font-face {
       font-family: 'Futura';
       src: url('/fonts/FuturaPT-Demi.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
-      font-display: swap;
     }
-  </style>
+    
 
-  <!-- Leaflet CSS по CDN -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-o9N1j6bErP0h36q8E58rPsYocxFVD0a4O1wTf2QhEYw="
-    crossorigin=""
-  />
-
-  <style>
-    /* Твои стили: убрал повторения, сохранил структуру */
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: 'Futura', sans-serif;
-      background-color: #121212;
-      overflow: hidden;
-    }
 
     header {
       z-index: 20000;
     }
 
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      height: 100%; 
+      font-family: 'Futura', sans-serif;
+      background-color: #121212;
+      overflow: hidden;
+    }
+    
     #map-container {
       position: relative;
       height: 100vh;
       width: 100vw;
     }
-
-    #map {
-      height: 85%;
+    
+    #map { 
+      height: 85%; 
       width: 100%;
       background-color: #121212;
       z-index: 1009;
     }
-
+    
     #error {
-      visibility: hidden;
+     visibility: hidden;
     }
-
+    
     .custom-marker {
       background-color: #333;
       border-radius: 50%;
@@ -67,14 +59,14 @@
       align-items: center;
       justify-content: center;
     }
-
+    
     .custom-marker-inner {
       width: 10px;
       height: 10px;
       background-color: #888;
       border-radius: 50%;
     }
-
+    
     .leaflet-popup-content {
       padding: 10px;
       min-width: 150px;
@@ -84,9 +76,15 @@
       font-family: 'Futura', sans-serif;
       background-color: #1e1e1e;
       color: #e0e0e0;
-      overflow-x: hidden;
     }
 
+    .leaflet-popup-content {
+  overflow-x: hidden; /* запрещаем горизонтальный скролл */
+}
+
+
+
+    
     .leaflet-popup-content-wrapper {
       background-color: #1e1e1e;
       color: #e0e0e0;
@@ -94,26 +92,28 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.8);
       border-radius: 8px;
     }
-
+    
     .leaflet-popup-tip {
       background-color: #1e1e1e;
     }
-
+    
     .flag-container {
       text-align: center;
       margin: 0 auto 8px auto;
       width: 100%;
     }
-
+    
     .flag-img {
       max-width: 100%;
+   
+      width: auto;
       height: auto;
       border: 1px solid #444;
       border-radius: 4px;
       display: block;
       margin: 0 auto;
     }
-
+    
     .no-flag {
       color: #888;
       font-style: italic;
@@ -121,49 +121,50 @@
       text-align: center;
       padding: 5px 0;
     }
-
+    
     .properties-list {
       margin-top: 8px;
       line-height: 1.4;
     }
-
+    
     .properties-list b {
       display: inline-block;
       min-width: 80px;
       font-weight: bold;
       color: #ccc;
     }
-
+    
     .properties-list div {
       margin-bottom: 3px;
       color: #aaa;
     }
-
+    
+    /* Стили для тёмной карты */
     .leaflet-control-attribution {
       background-color: rgba(0,0,0,0.7) !important;
       color: #aaa !important;
       border-radius: 5px !important;
     }
-
+    
     .leaflet-bar {
       background-color: #1e1e1e !important;
       border-color: #333 !important;
       border-radius: 8px !important;
       overflow: hidden;
     }
-
+    
     .leaflet-bar a {
       background-color: #1e1e1e !important;
       color: #aaa !important;
       border-bottom-color: #333 !important;
     }
-
+    
     .leaflet-bar a:hover {
       background-color: #333 !important;
       color: #ddd !important;
     }
-
-    /* Аудио плеер */
+    
+    /* Стили для аудио плеера */
     #audio-player {
       position: fixed;
       bottom: 20px;
@@ -181,14 +182,14 @@
       max-width: 90%;
       box-sizing: border-box;
       transition: all 0.3s ease;
-      z-index: 1101;
+      z-index: 1101; /* Выше чем эффект помех */
     }
-
+    
     #audio-player.minimized {
       padding: 8px 15px;
       border-radius: 20px;
     }
-
+    
     .player-btn {
       background: rgba(60, 60, 60, 0.7);
       border: none;
@@ -201,38 +202,38 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
-
+    
     #audio-player.minimized .player-btn {
       width: 35px;
       height: 35px;
     }
-
+    
     .player-btn:hover {
       background: rgba(80, 80, 80, 0.9);
       transform: scale(1.05);
     }
-
+    
     .player-btn svg {
       width: 18px;
       height: 18px;
       fill: #e0e0e0;
     }
-
+    
     #play-pause-btn {
       background: rgba(80, 80, 80, 0.9);
     }
-
+    
     #play-pause-btn:hover {
       background: rgba(100, 100, 100, 0.9);
     }
-
+    
     .player-info {
       flex-grow: 1;
       min-width: 0;
       color: #e0e0e0;
       font-size: 14px;
     }
-
+    
     #track-title {
       white-space: nowrap;
       overflow: hidden;
@@ -240,14 +241,14 @@
       font-weight: bold;
       margin-bottom: 3px;
     }
-
+    
     #track-time {
       font-size: 12px;
       color: #aaa;
       display: flex;
       justify-content: space-between;
     }
-
+    
     #progress-container {
       height: 4px;
       background: rgba(60, 60, 60, 0.5);
@@ -255,7 +256,7 @@
       margin-top: 5px;
       cursor: pointer;
     }
-
+    
     #progress-bar {
       height: 100%;
       background: #888;
@@ -263,18 +264,18 @@
       width: 0%;
       transition: width 0.1s linear;
     }
-
+    
     #volume-container {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-
+    
     #volume-btn {
       display: flex;
       align-items: center;
     }
-
+    
     #volume-slider {
       width: 80px;
       height: 4px;
@@ -284,7 +285,7 @@
       outline: none;
       cursor: pointer;
     }
-
+    
     #volume-slider::-webkit-slider-thumb {
       appearance: none;
       width: 12px;
@@ -293,11 +294,11 @@
       border-radius: 50%;
       cursor: pointer;
     }
-
+    
     #minimize-btn {
       display: none;
     }
-
+    
     @media (max-width: 768px) {
       #audio-player {
         width: calc(100% - 40px);
@@ -305,56 +306,56 @@
         bottom: 10px;
         padding: 10px 15px;
       }
-
+      
       .player-btn {
         width: 36px;
         height: 36px;
       }
-
+      
       #volume-slider {
         width: 60px;
       }
-
+      
       #minimize-btn {
         display: flex;
       }
-
+      
       .player-info {
         font-size: 13px;
       }
     }
-
+    
     @media (max-width: 480px) {
       #audio-player {
         flex-wrap: wrap;
         padding: 10px;
         gap: 10px;
       }
-
+      
       .player-controls {
         display: flex;
         width: 100%;
         justify-content: space-between;
         order: 2;
       }
-
+      
       .player-info {
         order: 1;
         width: 100%;
         margin-bottom: 8px;
       }
-
+      
       #volume-container {
         display: none;
       }
-
+      
       #audio-player.expanded #volume-container {
         display: flex;
         order: 3;
         width: 100%;
         margin-top: 8px;
       }
-
+      
       #audio-player.expanded #volume-slider {
         flex-grow: 1;
       }
@@ -366,7 +367,7 @@
   <header>
     <div class="container">
       <nav id="navigation">
-        <img src="logo.svg" alt="Логотип сайта" class="logo" width="65" />
+        <img src="logo.svg" alt="Логотип сайта" class="logo" width="65px">
         <a aria-label="mobile menu" class="nav-toggle">
           <span></span>
           <span></span>
@@ -380,36 +381,38 @@
           <a href="time.html">Время</a>
         </div>
         <div class="vk-link">
-          <a href="https://vk.com/vgovernments" target="_blank" rel="noopener">
-            <img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50" />
-          </a>
-        </div>
+          <a href="https://vk.com/vgovernments"><img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50px"></a>
+          </div>
       </nav>
-    </div>
+     </div>
   </header>
-
   <div id="map-container">
     <div id="map"></div>
     <div id="noise-overlay"></div>
   </div>
   <div id="error"></div>
-
-  <!-- Один аудио элемент вместо пяти -->
-  <audio id="audio-player-element" preload="metadata"></audio>
-
-  <!-- Контейнер для аудиоплеера -->
+  
+  <!-- Аудио плеер -->
   <div id="audio-player" class="minimized">
     <button id="prev-btn" class="player-btn" title="Предыдущий трек">
-      <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+      <svg viewBox="0 0 24 24">
+        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+      </svg>
     </button>
     <button id="play-pause-btn" class="player-btn" title="Воспроизвести/Пауза">
-      <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-      <svg id="pause-icon" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      <svg id="play-icon" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <svg id="pause-icon" viewBox="0 0 24 24" style="display: none;">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
     </button>
     <button id="next-btn" class="player-btn" title="Следующий трек">
-      <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+      <svg viewBox="0 0 24 24">
+        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+      </svg>
     </button>
-
+    
     <div class="player-info">
       <div id="track-title">Загрузка...</div>
       <div id="track-time">
@@ -420,153 +423,39 @@
         <div id="progress-bar"></div>
       </div>
     </div>
-
+    
     <div id="volume-container">
       <button id="volume-btn" class="player-btn" title="Громкость">
-        <svg id="volume-high" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-        <svg id="volume-mute" viewBox="0 0 24 24" style="display: none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        <svg id="volume-high" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <svg id="volume-mute" viewBox="0 0 24 24" style="display: none;">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
       </button>
-      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5" />
+      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
     </div>
-
+    
     <button id="minimize-btn" class="player-btn" title="Свернуть/Развернуть">
-      <svg id="expand-icon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-      <svg id="collapse-icon" viewBox="0 0 24 24" style="display: none;"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+      <svg id="expand-icon" viewBox="0 0 24 24">
+        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+      </svg>
+      <svg id="collapse-icon" viewBox="0 0 24 24" style="display: none;">
+        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+      </svg>
     </button>
   </div>
 
-  <!-- Leaflet JS по CDN с defer -->
-  <script
-    src=js/leaflet.js"
-    integrity="sha256-oC7HPNvmXjhXOUaW94hRygnxqRm5Uy11/kHJwMh1aoY="
-    crossorigin=""
-    defer
-  ></script>
+  <!-- Аудио элементы -->
+  <audio id="track1" src="TNO OST - Toolbox Theory.mp3" preload="metadata"></audio>
+  <audio id="track2" src="The New Order_ Last Days of Europe - Russian Fairytale.mp3" preload="metadata"></audio>
+  <audio id="track3" src="Half-Life 2_ Overcharged - Particle Ghost (Remix).mp3" preload="metadata"></audio>
+  <audio id="track4" src="TNO OST - Burgundian Lullaby.mp3" preload="metadata"></audio>
+  <audio id="track5" src="The New Order - TNO OST_ Between the Bombings.mp3" preload="metadata"></audio>
 
-  <!-- Твои скрипты с defer -->
-  <script src="js/index.js" defer></script>
-  <script src="js/map.js" defer></script>
-
-  <script defer>
-    // Аудиоплеер: массив треков и базовая логика
-    document.addEventListener('DOMContentLoaded', () => {
-      const audio = document.getElementById('audio-player-element');
-      const playPauseBtn = document.getElementById('play-pause-btn');
-      const playIcon = document.getElementById('play-icon');
-      const pauseIcon = document.getElementById('pause-icon');
-      const prevBtn = document.getElementById('prev-btn');
-      const nextBtn = document.getElementById('next-btn');
-      const trackTitle = document.getElementById('track-title');
-      const currentTimeEl = document.getElementById('current-time');
-      const totalTimeEl = document.getElementById('total-time');
-      const progressBar = document.getElementById('progress-bar');
-      const progressContainer = document.getElementById('progress-container');
-      const volumeBtn = document.getElementById('volume-btn');
-      const volumeSlider = document.getElementById('volume-slider');
-      const volumeHigh = document.getElementById('volume-high');
-      const volumeMute = document.getElementById('volume-mute');
-
-      const tracks = [
-        { src: "TNO OST - Toolbox Theory.mp3", title: "Toolbox Theory" },
-        { src: "The New Order_ Last Days of Europe - Russian Fairytale.mp3", title: "Russian Fairytale" },
-        { src: "Half-Life 2_ Overcharged - Particle Ghost (Remix).mp3", title: "Particle Ghost (Remix)" },
-        { src: "TNO OST - Burgundian Lullaby.mp3", title: "Burgundian Lullaby" },
-        { src: "The New Order - TNO OST_ Between the Bombings.mp3", title: "Between the Bombings" }
-      ];
-
-      let currentTrackIndex = 0;
-
-      function loadTrack(index) {
-        if(index < 0) index = tracks.length - 1;
-        if(index >= tracks.length) index = 0;
-        currentTrackIndex = index;
-        audio.src = tracks[index].src;
-        trackTitle.textContent = tracks[index].title;
-        audio.load();
-      }
-
-      function togglePlayPause() {
-        if(audio.paused) {
-          audio.play();
-        } else {
-          audio.pause();
-        }
-      }
-
-      audio.addEventListener('play', () => {
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-      });
-
-      audio.addEventListener('pause', () => {
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-      });
-
-      audio.addEventListener('timeupdate', () => {
-        const current = audio.currentTime;
-        const duration = audio.duration || 0;
-        currentTimeEl.textContent = formatTime(current);
-        totalTimeEl.textContent = formatTime(duration);
-        const progressPercent = (current / duration) * 100 || 0;
-        progressBar.style.width = progressPercent + '%';
-      });
-
-      progressContainer.addEventListener('click', (e) => {
-        const width = progressContainer.clientWidth;
-        const clickX = e.offsetX;
-        const duration = audio.duration || 0;
-        audio.currentTime = (clickX / width) * duration;
-      });
-
-      prevBtn.addEventListener('click', () => {
-        loadTrack(currentTrackIndex - 1);
-        audio.play();
-      });
-
-      nextBtn.addEventListener('click', () => {
-        loadTrack(currentTrackIndex + 1);
-        audio.play();
-      });
-
-      playPauseBtn.addEventListener('click', togglePlayPause);
-
-      volumeSlider.addEventListener('input', () => {
-        audio.volume = volumeSlider.value;
-        updateVolumeIcon();
-      });
-
-      volumeBtn.addEventListener('click', () => {
-        if(audio.muted) {
-          audio.muted = false;
-          volumeSlider.value = audio.volume;
-        } else {
-          audio.muted = true;
-          volumeSlider.value = 0;
-        }
-        updateVolumeIcon();
-      });
-
-      function updateVolumeIcon() {
-        if(audio.muted || audio.volume === 0) {
-          volumeHigh.style.display = 'none';
-          volumeMute.style.display = 'block';
-        } else {
-          volumeHigh.style.display = 'block';
-          volumeMute.style.display = 'none';
-        }
-      }
-
-      function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60) || 0;
-        const secs = Math.floor(seconds % 60) || 0;
-        return mins + ':' + (secs < 10 ? '0' : '') + secs;
-      }
-
-      // Загрузка первого трека при старте
-      loadTrack(0);
-      updateVolumeIcon();
-    });
-  </script>
+  <script src="js/leaflet.js"></script>
+  
+  <script src="js/index.js"></script>
+  <script src="js/map.js"></script>
 </body>
 </html>
