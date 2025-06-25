@@ -37,102 +37,95 @@ function createPopupContent({ properties }) {
   for (const [k, v] of Object.entries(properties)) {
     if (!ignoredProps.has(k)) content += `<div><b>${k}</b> ${v || ''}</div>`;
   }
-  return content + '</div></div>';
+ return content + '</div></div>';
 }
 
-// Получаем функции из глобального turf
-const difference = turf.difference;
-const booleanIntersects = turf.booleanIntersects;
+// Используем глобальный turf
+const { difference, booleanIntersects } = turf;
 
 fetch('map (11).geojson')
-  .then(r => r.json())
+  .then(res => res.json())
   .then(({ features }) => {
     if (!features) throw new Error("GeoJSON has no features");
 
-    // Сортируем точки в конец, полигоны в начало + сортируем по z-index (возрастание)
-    features.sort((a, b) => {
-      const aIsPoint = a.geometry?.type === "Point";
-      const bIsPoint = b.geometry?.type === "Point";
-      if (aIsPoint !== bIsPoint) return aIsPoint ? 1 : -1;
+    // Фильтруем только полигоны и сортируем по z-index возрастанию
+    const polygons = features
+      .filter(f => ['Polygon', 'MultiPolygon'].includes(f.geometry?.type))
+      .sort((a, b) => {
+        const aZ = a.properties?.['z-index'] || 0;
+        const bZ = b.properties?.['z-index'] || 0;
+        return aZ - bZ;
+      });
 
-      const aZ = a.properties?.['z-index'] || 0;
-      const bZ = b.properties?.['z-index'] || 0;
-      return aZ - bZ;
-    });
-
-    // Быстрая агрегация данных по fill для наследования nameKey и flag
+    // Аггрегация по fill для наследования nameKey и flag
+    const ignoredProps = new Set(['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index']);
     const colorData = {};
-    for (const f of features) {
-      if (!['Polygon', 'MultiPolygon'].includes(f.geometry?.type)) continue;
-      const { fill, flag, ...rest } = f.properties || {};
+    for (const f of polygons) {
+      const props = f.properties || {};
+      const fill = props.fill;
       if (!fill) continue;
       if (!colorData[fill]) colorData[fill] = { nameKey: null, flag: null };
       if (!colorData[fill].nameKey) {
-        const nameKey = Object.keys(rest).find(k => !ignoredProps.has(k));
+        const nameKey = Object.keys(props).find(k => !ignoredProps.has(k));
         colorData[fill].nameKey = nameKey || null;
       }
-      if (!colorData[fill].flag && flag) colorData[fill].flag = flag;
+      if (!colorData[fill].flag && props.flag) {
+        colorData[fill].flag = props.flag;
+      }
     }
 
-    for (const f of features) {
-      if (!['Polygon', 'MultiPolygon'].includes(f.geometry?.type)) continue;
-      const p = f.properties || {};
-      const d = colorData[p.fill];
+    // Наследуем свойства для полигонов без своих свойств, если есть данные в colorData
+    for (const f of polygons) {
+      const props = f.properties || {};
+      const fill = props.fill;
+      if (!fill) continue;
+      const d = colorData[fill];
       if (!d) continue;
-      if (!Object.keys(p).some(k => !ignoredProps.has(k)) && d.nameKey) p[d.nameKey] = '';
-      if (!p.flag && d.flag) p.flag = d.flag;
+      // Если нет ни одного "основного" свойства кроме ignoredProps — наследуем
+      const hasMainProps = Object.keys(props).some(k => !ignoredProps.has(k));
+      if (!hasMainProps && d.nameKey) {
+        props[d.nameKey] = '';
+      }
+      if (!props.flag && d.flag) {
+        props.flag = d.flag;
+      }
     }
 
-    // Разделяем полигоны и точки
-    const polygons = features.filter(f => ['Polygon', 'MultiPolygon'].includes(f.geometry?.type));
-    const points = features.filter(f => f.geometry?.type === 'Point');
-
+    // Обрезаем полигоны сверху вниз
     const clippedPolygons = [];
 
     for (let i = 0; i < polygons.length; i++) {
-      let basePoly = polygons[i];
-      let clippedGeom = basePoly.geometry;
+      let baseFeature = polygons[i];
+      let baseGeom = baseFeature.geometry;
 
-      // Обрезаем сверху наложенные полигоны с большим z-index
       for (let j = i + 1; j < polygons.length; j++) {
-        const topPoly = polygons[j];
+        const topFeature = polygons[j];
 
-        if (booleanIntersects(clippedGeom, topPoly.geometry)) {
+        if (turf.booleanIntersects(baseGeom, topFeature.geometry)) {
           try {
-            const diff = difference({ type: 'Feature', geometry: clippedGeom }, topPoly);
+            const diff = turf.difference({ type: 'Feature', geometry: baseGeom }, topFeature);
             if (diff && diff.geometry) {
-              clippedGeom = diff.geometry;
+              baseGeom = diff.geometry;
             } else {
-              // Полностью закрыт сверху — не рисуем
-              clippedGeom = null;
+              baseGeom = null;
               break;
             }
-          } catch (e) {
-            console.warn('Ошибка turf.difference, пропускаем:', e);
-            // При ошибке оставляем текущий полигон без изменений
+          } catch (err) {
+            console.warn('turf.difference error, skipping:', err);
           }
         }
       }
-      if (clippedGeom) {
+
+      if (baseGeom) {
         clippedPolygons.push({
-          ...basePoly,
-          geometry: clippedGeom
+          ...baseFeature,
+          geometry: baseGeom
         });
       }
     }
 
-    // Объединяем обрезанные полигоны и точки
-    const processed = [...clippedPolygons, ...points];
-
-    const markersLayer = L.layerGroup().addTo(map);
-
-    L.geoJSON({ type: "FeatureCollection", features: processed }, {
-      pointToLayer: (feature, latlng) => {
-        const marker = L.marker(latlng, { icon: whiteMachineIcon, bubblingMouseEvents: false });
-        marker.bindPopup(createPopupContent(feature), { maxWidth: 300, minWidth: 150, className: 'dark-popup' });
-        markersLayer.addLayer(marker);
-        return marker;
-      },
+    // Рендерим обрезанные полигоны
+    L.geoJSON({ type: "FeatureCollection", features: clippedPolygons }, {
       style: ({ properties }) => ({
         stroke: true,
         color: properties['stroke'] || '#555',
@@ -143,8 +136,7 @@ fetch('map (11).geojson')
         fillOpacity: +properties['fill-opacity'] || 0.5
       }),
       onEachFeature: (feature, layer) => {
-        if (feature.geometry.type !== 'Point')
-          layer.bindPopup(createPopupContent(feature), { maxWidth: 300, minWidth: 150, className: 'dark-popup' });
+        layer.bindPopup(createPopupContent(feature), { maxWidth: 300, minWidth: 150, className: 'dark-popup' });
       }
     }).addTo(map);
 
@@ -153,6 +145,7 @@ fetch('map (11).geojson')
     console.error("Loading error:", err);
     document.getElementById('error').innerHTML = `<b>Ошибка загрузки данных</b><br>${err.message}`;
   });
+
 
 // === Аудиоплеер (твой оригинальный код, без изменений) ===
 
