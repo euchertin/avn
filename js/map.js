@@ -1,3 +1,7 @@
+const ignoredProps = new Set([
+  'stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index'
+]);
+
 const worldBounds = L.latLngBounds([-85, -180], [85, 180]);
 
 const map = L.map('map', {
@@ -19,15 +23,6 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png'
 
 L.control.zoom({ position: 'topright' }).addTo(map);
 
-const whiteMachineIcon = L.divIcon({
-  className: 'custom-marker',
-  html: '<div class="custom-marker-inner"></div>',
-  iconSize: [20, 20],
-  iconAnchor: [10, 10]
-});
-
-const ignoredProps = new Set(['stroke', 'stroke-width', 'stroke-opacity', 'fill', 'fill-opacity', 'flag', 'z-index']);
-
 function createPopupContent({ properties }) {
   if (!properties) return "Нет данных";
   let flagHtml = properties.flag
@@ -40,70 +35,41 @@ function createPopupContent({ properties }) {
   return content + '</div></div>';
 }
 
+let geojsonLayer = null;
+window.processedGeoJSON = null; // для скачивания обработанных данных
+
 fetch('map (11).geojson')
   .then(r => r.json())
-  .then(({ features }) => {
-    if (!features) throw new Error("GeoJSON has no features");
+  .then(data => {
+    if (!data.features) throw new Error("GeoJSON has no features");
 
-    // Сортируем, чтобы сначала были полигоны с меньшим z-index, а потом точки
-    features.sort((a, b) => {
-      const ap = a.geometry?.type === "Point";
-      const bp = b.geometry?.type === "Point";
-      if (ap !== bp) return ap ? 1 : -1;
-      return (a.properties?.['z-index'] || 0) - (b.properties?.['z-index'] || 0);
+    // Пример обработки: фильтрация и добавление флагов по умолчанию
+    const processedFeatures = data.features.map(feature => {
+      // Например, если у фичи нет флага, ставим дефолт
+      if (!feature.properties.flag) {
+        feature.properties.flag = 'images/default-flag.jpg';
+      }
+      // Тут можно добавить другие обработки: обрезка, фильтрация, добавление названий и т.п.
+      return feature;
     });
 
-    // Собираем данные по цветам (fill) для наследования nameKey и flag
-    const colorData = {};
-    for (const f of features) {
-      if (!['Polygon', 'MultiPolygon'].includes(f.geometry?.type)) continue;
-      const { fill, flag, ...rest } = f.properties || {};
-      const nameKey = Object.keys(rest).find(k => !ignoredProps.has(k));
-      if (fill && (nameKey || flag)) {
-        colorData[fill] ??= {};
-        if (nameKey) colorData[fill].nameKey = nameKey;
-        if (flag) colorData[fill].flag = flag;
-      }
-    }
+    window.processedGeoJSON = {
+      type: "FeatureCollection",
+      features: processedFeatures
+    };
 
-    // Добавляем недостающие свойства из colorData
-    for (const f of features) {
-      if (!['Polygon', 'MultiPolygon'].includes(f.geometry?.type)) continue;
-      const p = f.properties;
-      const d = colorData[p.fill];
-      if (!d) continue;
-      if (!Object.keys(p).some(k => !ignoredProps.has(k)) && d.nameKey) p[d.nameKey] = '';
-      if (!p.flag && d.flag) p.flag = d.flag;
-    }
+    if (geojsonLayer) geojsonLayer.remove();
 
-    // Обрабатываем наложения полигонов через turf.difference (минимум вызовов)
-    const processed = [];
-    for (let i = 0; i < features.length; i++) {
-      const cur = features[i];
-      if (!['Polygon', 'MultiPolygon'].includes(cur.geometry?.type)) {
-        processed.push(cur);
-        continue;
-      }
-      let geom = cur;
-      for (let j = i + 1; j < features.length; j++) {
-        const next = features[j];
-        if (!['Polygon', 'MultiPolygon'].includes(next.geometry?.type)) continue;
-        try {
-          const diff = turf.difference(geom, next);
-          if (!diff) { geom = null; break; }
-          geom = diff;
-        } catch (e) { console.warn('turf.difference error:', e); }
-      }
-      if (geom) processed.push({ ...cur, geometry: geom.geometry });
-    }
-
-    const markersLayer = L.layerGroup().addTo(map);
-
-    L.geoJSON({ type: "FeatureCollection", features: processed }, {
+    geojsonLayer = L.geoJSON(window.processedGeoJSON, {
       pointToLayer: (feature, latlng) => {
-        const marker = L.marker(latlng, { icon: whiteMachineIcon, bubblingMouseEvents: false });
+        const icon = L.divIcon({
+          className: 'custom-marker',
+          html: '<div class="custom-marker-inner"></div>',
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        });
+        const marker = L.marker(latlng, { icon, bubblingMouseEvents: false });
         marker.bindPopup(createPopupContent(feature), { maxWidth: 300, minWidth: 150, className: 'dark-popup' });
-        markersLayer.addLayer(marker);
         return marker;
       },
       style: ({ properties }) => ({
@@ -116,8 +82,9 @@ fetch('map (11).geojson')
         fillOpacity: +properties['fill-opacity'] || 0.5
       }),
       onEachFeature: (feature, layer) => {
-        if (feature.geometry.type !== 'Point')
+        if (feature.geometry.type !== 'Point') {
           layer.bindPopup(createPopupContent(feature), { maxWidth: 300, minWidth: 150, className: 'dark-popup' });
+        }
       }
     }).addTo(map);
   })
@@ -126,7 +93,29 @@ fetch('map (11).geojson')
     document.getElementById('error').innerHTML = `<b>Ошибка загрузки данных</b><br>${err.message}`;
   });
 
-// Аудиоплеер
+// Скачивание обработанного GeoJSON
+document.getElementById('process-download-btn').addEventListener('click', () => {
+  if (!window.processedGeoJSON) {
+    alert('Данные карты еще не загружены или не обработаны');
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(window.processedGeoJSON, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'processed-map.geojson';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+  alert('Обработанный GeoJSON скачан');
+});
+
+
+// === Аудиоплеер ===
 
 const $ = id => document.getElementById(id);
 
@@ -329,4 +318,3 @@ function autoPlayOnInteraction() {
 ['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, autoPlayOnInteraction));
 
 updateTrackInfo();
-
