@@ -8,6 +8,133 @@
   <link rel="stylesheet" href="css/country.css" />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <style>
+  /* Добавим стиль для модального окна редактирования */
+  .edit-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  }
+  .edit-modal {
+    background: #222;
+    padding: 25px;
+    border-radius: 16px;
+    max-width: 700px;
+    width: 90%;
+    color: white;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+  }
+  .edit-modal h2 {
+    margin-top: 0;
+  }
+  .edit-modal label {
+    display: block;
+    margin-top: 15px;
+    font-weight: 600;
+  }
+  .edit-modal input[type="text"],
+  .edit-modal textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: none;
+    background: #333;
+    color: white;
+    resize: vertical;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  .edit-modal textarea {
+    min-height: 100px;
+  }
+  .edit-modal .buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+  }
+  .edit-modal button {
+    padding: 10px 22px;
+    font-size: 16px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .edit-modal button.save-btn {
+    background-color: #28a745;
+    color: white;
+  }
+  .edit-modal button.cancel-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  /* История изменений */
+  .history-container {
+    margin-top: 20px;
+    background: #111;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .history-header {
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .version-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #222;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+  }
+  .version-date {
+    color: #bbb;
+  }
+  .version-buttons button {
+    margin-left: 10px;
+    font-size: 14px;
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  .version-buttons button.view-btn {
+    background-color: #007bff;
+    color: white;
+  }
+  .version-buttons button.rollback-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+  .version-buttons button:hover {
+    filter: brightness(1.15);
+  }
+
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .edit-modal {
+      max-width: 95%;
+      padding: 15px;
+    }
+    .edit-modal textarea {
+      min-height: 80px;
+    }
+  }
+</style>
+
+  <style>
     * {
       font-family: 'Futura', sans-serif;
     }
@@ -181,11 +308,19 @@
     <p>© 2025 Евгений Чертин. Все права защищены.</p>
   </div>
 </footer>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import {
-    getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, query, orderBy
+    getFirestore,
+    collection,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    doc,
+    query,
+    orderBy,
+    addDoc,
+    getDoc
   } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
   import {
@@ -194,7 +329,6 @@
     onAuthStateChanged,
     signOut
   } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-
 
   const firebaseConfig = {
     apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
@@ -221,7 +355,107 @@
 
   let currentTab = "pending";
 
-  // Отрисовка заявки
+  // Создание формы редактирования заявки
+  function createEditForm(data) {
+    return `
+      <form class="edit-form" style="margin-top: 20px; background: #222; padding: 15px; border-radius: 10px; color: #fff;">
+        <label>Форма правления:<br>
+          <input name="ruleForm" type="text" value="${data.ruleForm || ''}" />
+        </label><br><br>
+
+        <label>Религия:<br>
+          <input name="religion" type="text" value="${data.religion || ''}" />
+        </label><br><br>
+
+        <label>Население:<br>
+          <input name="population" type="text" value="${data.population || ''}" />
+        </label><br><br>
+
+        <label>Государственное устройство:<br>
+          <input name="recognition" type="text" value="${data.recognition || ''}" />
+        </label><br><br>
+
+        <label>Описание:<br>
+          <textarea name="description" rows="5">${data.description || ''}</textarea>
+        </label><br><br>
+
+        <label>Правитель (имя):<br>
+          <input name="rulerName" type="text" value="${data.rulerName || ''}" />
+        </label><br><br>
+
+        <label>Валюта (название):<br>
+          <input name="currencyName" type="text" value="${data.currencyName || ''}" />
+        </label><br><br>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="save-btn" style="background-color:#28a745; color:#fff; border:none; border-radius:20px; padding:10px 20px; cursor:pointer;">
+            Сохранить
+          </button>
+          <button type="button" class="cancel-btn" style="background-color:#dc3545; color:#fff; border:none; border-radius:20px; padding:10px 20px; cursor:pointer;">
+            Отмена
+          </button>
+        </div>
+      </form>
+    `;
+  }
+
+  // Создание истории версий заявки
+  function createVersionHistory(versions, currentData, onRevert) {
+    const container = document.createElement("div");
+    container.className = "version-history";
+    container.style.marginTop = "20px";
+    container.style.background = "#111";
+    container.style.padding = "15px";
+    container.style.borderRadius = "12px";
+    container.style.color = "#ccc";
+    container.innerHTML = "<strong>История изменений:</strong>";
+
+    if (!versions || versions.length === 0) {
+      const noVersions = document.createElement("p");
+      noVersions.textContent = "Нет сохранённых версий";
+      container.appendChild(noVersions);
+      return container;
+    }
+
+    versions.forEach((ver) => {
+      const verDiv = document.createElement("div");
+      verDiv.style.padding = "8px";
+      verDiv.style.marginTop = "8px";
+      verDiv.style.border = "1px solid #444";
+      verDiv.style.borderRadius = "10px";
+      verDiv.style.background = "#222";
+      verDiv.style.display = "flex";
+      verDiv.style.justifyContent = "space-between";
+      verDiv.style.alignItems = "center";
+
+      const verInfo = document.createElement("div");
+      const date = ver.timestamp ? new Date(ver.timestamp.seconds * 1000).toLocaleString() : "Без даты";
+      verInfo.innerHTML = `<small>Версия от: ${date}</small>`;
+
+      const revertBtn = document.createElement("button");
+      revertBtn.textContent = "Откатить";
+      revertBtn.style.background = "#007bff";
+      revertBtn.style.color = "white";
+      revertBtn.style.border = "none";
+      revertBtn.style.borderRadius = "16px";
+      revertBtn.style.padding = "6px 14px";
+      revertBtn.style.cursor = "pointer";
+      revertBtn.style.userSelect = "none";
+
+      revertBtn.addEventListener("click", () => {
+        if (confirm("Вы действительно хотите откатить заявку к этой версии?")) {
+          onRevert(ver);
+        }
+      });
+
+      verDiv.appendChild(verInfo);
+      verDiv.appendChild(revertBtn);
+      container.appendChild(verDiv);
+    });
+
+    return container;
+  }
+
   function createApplicationCard(id, data) {
     const appDiv = document.createElement("div");
     appDiv.className = "application";
@@ -231,7 +465,7 @@
         <div class="left-column">
           <div class="upload-wrapper">
             <p>${data.unitary || "—"}</p>
-    
+
             <label class="upload-label">Флаг</label>
             <div class="flag-field">
               <img src="${data.flagUrl || 'images/default-flag.jpg'}" alt="Флаг страны" />
@@ -277,12 +511,16 @@
         <div class="btns" style="margin-left: auto;">
           <button class="approve" ${data.status === "approved" ? "disabled" : ""}>Принять</button>
           <button class="reject">Отклонить</button>
+          <button class="edit">Редактировать</button>
+          <button class="history">История</button>
         </div>
       </div>
     `;
 
     const approveBtn = appDiv.querySelector("button.approve");
     const rejectBtn = appDiv.querySelector("button.reject");
+    const editBtn = appDiv.querySelector("button.edit");
+    const historyBtn = appDiv.querySelector("button.history");
     const statusSpan = appDiv.querySelector(".status");
 
     approveBtn.addEventListener("click", async () => {
@@ -307,8 +545,113 @@
       }
     });
 
+    editBtn.addEventListener("click", () => {
+      renderEdit(id, data, appDiv);
+    });
+
+    historyBtn.addEventListener("click", async () => {
+      // Проверяем, есть ли уже история под этим приложением
+      let historyContainer = appDiv.querySelector(".version-history");
+      if (historyContainer) {
+        // Если есть, удаляем (тогглим показ)
+        historyContainer.remove();
+        historyBtn.textContent = "История";
+        return;
+      }
+
+      historyBtn.textContent = "Скрыть историю";
+      historyContainer = document.createElement("div");
+      appDiv.appendChild(historyContainer);
+
+      try {
+        const versionsCol = collection(db, "applications", id, "versions");
+        const versionsSnap = await getDocs(query(versionsCol, orderBy("timestamp", "desc")));
+        const versions = [];
+        versionsSnap.forEach(docSnap => {
+          versions.push(docSnap.data());
+        });
+
+        const historyElem = createVersionHistory(versions, data, async (version) => {
+          if (!version) return;
+          try {
+            // Сохраняем текущую версию в историю перед откатом
+            await addDoc(collection(db, "applications", id, "versions"), {...data, timestamp: { seconds: Math.floor(Date.now()/1000)}});
+            // Обновляем заявку на выбранную версию, не меняя статус
+            await updateDoc(doc(db, "applications", id), {...version, status: data.status});
+            Object.assign(data, version);
+            alert("Заявка откатена к выбранной версии");
+            historyContainer.innerHTML = "";
+            historyBtn.textContent = "История";
+            appDiv.innerHTML = "";
+            appDiv.appendChild(createApplicationCard(id, data));
+          } catch {
+            alert("Ошибка при откате заявки");
+          }
+        });
+
+        historyContainer.appendChild(historyElem);
+      } catch {
+        alert("Ошибка загрузки истории изменений");
+      }
+    });
+
     return appDiv;
   }
+
+  async function renderEdit(id, data, appDiv) {
+  appDiv.innerHTML = createEditForm(data);
+
+  const form = appDiv.querySelector("form.edit-form");
+  const cancelBtn = form.querySelector(".cancel-btn");
+
+  cancelBtn.addEventListener("click", () => {
+    // При отмене заново подгружаем данные из Firestore
+    getDoc(doc(db, "applications", id)).then(docSnap => {
+      if (docSnap.exists()) {
+        const freshData = docSnap.data();
+        appDiv.innerHTML = "";
+        appDiv.appendChild(createApplicationCard(id, freshData));
+      }
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    // Конвертируем FormData в объект, фильтруя пустые строки (если нужно)
+    const newData = {};
+    for (const [key, value] of formData.entries()) {
+      // Можно фильтровать пустые поля или преобразовывать типы, если нужно
+      newData[key] = value.trim();
+    }
+
+    try {
+      // Сохраняем текущую версию заявки в подколлекцию versions
+      await addDoc(collection(db, "applications", id, "versions"), {
+        ...data,
+        timestamp: new Date() // более правильный timestamp
+      });
+
+      // Обновляем заявку
+      await updateDoc(doc(db, "applications", id), newData);
+
+      alert("Заявка обновлена");
+
+      // Получаем свежие данные и заново рендерим карточку
+      const docSnap = await getDoc(doc(db, "applications", id));
+      if (docSnap.exists()) {
+        const freshData = docSnap.data();
+        appDiv.innerHTML = "";
+        const newCard = createApplicationCard(id, freshData);
+        appDiv.appendChild(newCard);
+      }
+    } catch (error) {
+      console.error("Ошибка обновления заявки:", error);
+      alert("Ошибка обновления заявки: " + error.message);
+    }
+  });
+}
+
 
   // Загрузка заявок с фильтром по вкладке
   async function loadApplications() {
@@ -396,8 +739,9 @@
       authError.textContent = "";
     }
   });
-
 </script>
+
+
 
 </body>
 </html>
