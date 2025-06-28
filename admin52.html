@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -8,19 +7,18 @@
   <link rel="stylesheet" href="css/index.css" />
   <link rel="stylesheet" href="css/country.css" />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
-  <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=eU1U6pbsyOJ8mS289Cq1muFFh_ZP_7Rn7-GtsGhqCYDTCPgntk5JX7ND_M9wCNR_rI83U6SXhzpgRakfSPgn9A" charset="UTF-8"></script><style>
-  * {
-   font-family: 'Futura', sans-serif;
-}
+  <style>
+    * {
+      font-family: 'Futura', sans-serif;
+    }
 
-    /* Твой стиль для админки — не трогаем */
+    /* Твой стиль для админки */
     .application {
       background-color: #1a1a1a;
       border-radius: 16px;
       box-shadow: 0 0 25px rgba(0,0,0,0.6);
       margin-bottom: 40px;
       padding: 30px;
-      font-family: 'Futura', sans-serif;
       color: #fff;
     }
     .app-header {
@@ -29,10 +27,6 @@
       align-items: center;
       margin-bottom: 25px;
       flex-wrap: wrap;
-    }
-    .app-header > div {
-      font-size: 22px;
-      font-weight: 600;
     }
     .btns {
       display: flex;
@@ -45,7 +39,6 @@
       border: none;
       padding: 12px 28px;
       font-size: 18px;
-      font-family: 'Futura', sans-serif;
       transition: background-color 0.3s ease;
       user-select: none;
     }
@@ -65,7 +58,7 @@
       filter: brightness(1.15);
     }
 
-    /* Стили для экрана ввода пароля */
+    /* Форма входа */
     #auth-wrapper {
       position: fixed;
       top:0; left:0; right:0; bottom:0;
@@ -76,16 +69,16 @@
       flex-direction: column;
       z-index: 9999;
       color: #eee;
-      font-family: 'Futura', sans-serif;
       padding: 20px;
     }
+    #auth-wrapper input[type="email"],
     #auth-wrapper input[type="password"] {
-      font-size: 24px;
+      font-size: 20px;
       padding: 12px 20px;
       border-radius: 8px;
       border: none;
       margin-top: 15px;
-      width: 250px;
+      width: 280px;
       background: #222;
       color: #eee;
       outline: none;
@@ -112,35 +105,24 @@
       min-height: 24px;
     }
 
-    /* Скрываем админку пока не авторизован */
+    /* Скрываем админку пока не залогинен */
     #admin-content {
       display: none;
+      max-width: 1400px;
+      margin: 80px auto;
+      padding: 0 20px;
+      color: white;
     }
-    .password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-#passwordInput {
-  padding: 10px;
-  font-size: 18px;
-  border-radius: 10px;
-  border: none;
-  outline: none;
-  flex: 1;
-}
-
-#togglePassword {
-  padding: 10px;
-  border: none;
-  background: #333;
-  color: #fff;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
+    #logout-btn {
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      background-color: #dc3545;
+      border-radius: 20px;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -164,18 +146,19 @@
   </div>
 </header>
 
+<!-- Форма входа -->
 <div id="auth-wrapper">
-  <h1>Введите пароль для доступа к админке</h1>
-  <div class="password-wrapper">
-    <input type="password" id="password-input" placeholder="Введите пароль" />
-    <button type="button" id="togglePassword">👁</button>
-  </div>
-  <button id="submit-password">Войти</button>
+  <h1>Вход администратора</h1>
+  <input type="email" id="email-input" placeholder="Email" />
+  <input type="password" id="password-input" placeholder="Пароль" />
+  <button id="login-btn">Войти</button>
   <div id="auth-error"></div>
 </div>
 
-<div id="admin-content" class="container" style="max-width:1400px; margin: 80px auto; padding: 0 20px;">
-  <h1 style="color:#fff; margin-bottom: 40px;">Администрация</h1>
+<!-- Админка -->
+<div id="admin-content">
+  <button id="logout-btn">Выйти</button>
+  <h1>Администрация</h1>
   <div id="tabs">
     <button id="tab-pending" class="tab active">Ждут рассмотрения</button>
     <button id="tab-approved" class="tab">Принятые</button>
@@ -202,8 +185,16 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import {
-    getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, query, orderBy, getDoc
+    getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, query, orderBy
   } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
 
   const firebaseConfig = {
     apiKey: "AIzaSyD1mSa0TpadaUqX5QxNoHaCJWWuJ8sXeLM",
@@ -215,11 +206,22 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const db = getFirestore(app);
+
+  // Элементы
+  const authWrapper = document.getElementById("auth-wrapper");
+  const adminContent = document.getElementById("admin-content");
+  const emailInput = document.getElementById("email-input");
+  const passwordInput = document.getElementById("password-input");
+  const loginBtn = document.getElementById("login-btn");
+  const authError = document.getElementById("auth-error");
   const applicationsList = document.getElementById("applications-list");
+  const logoutBtn = document.getElementById("logout-btn");
 
   let currentTab = "pending";
 
+  // Отрисовка заявки
   function createApplicationCard(id, data) {
     const appDiv = document.createElement("div");
     appDiv.className = "application";
@@ -308,6 +310,7 @@
     return appDiv;
   }
 
+  // Загрузка заявок с фильтром по вкладке
   async function loadApplications() {
     applicationsList.innerHTML = '<p style="color:#bbb;">Загрузка заявок...</p>';
     try {
@@ -333,6 +336,7 @@
     }
   }
 
+  // Переключение вкладок
   document.getElementById("tab-pending").addEventListener("click", () => {
     currentTab = "pending";
     document.getElementById("tab-pending").classList.add("active");
@@ -347,52 +351,53 @@
     loadApplications();
   });
 
-  document.getElementById("togglePassword").addEventListener("click", () => {
-    const input = document.getElementById("password-input");
-    input.type = input.type === "password" ? "text" : "password";
-  });
+  // Вход по email/password
+  loginBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    authError.textContent = "";
 
-  const authWrapper = document.getElementById("auth-wrapper");
-  const adminContent = document.getElementById("admin-content");
-  const input = document.getElementById("password-input");
-  const btn = document.getElementById("submit-password");
-  const errorDiv = document.getElementById("auth-error");
-
-  btn.addEventListener("click", async () => {
-    const val = input.value.trim();
-    if (!val) {
-      errorDiv.textContent = "Введите пароль!";
+    if (!email || !password) {
+      authError.textContent = "Введите email и пароль";
       return;
     }
 
     try {
-      const adminDoc = await getDoc(doc(db, "settings", "admin"));
-      if (!adminDoc.exists()) {
-        errorDiv.textContent = "Пароль не настроен в базе";
-        return;
-      }
-      const storedPassword = adminDoc.data().password;
-
-      if (val === storedPassword) {
-        authWrapper.style.display = "none";
-        adminContent.style.display = "block";
-        errorDiv.textContent = "";
-        loadApplications();
-      } else {
-        errorDiv.textContent = "Неверный пароль!";
-        input.value = "";
-        input.focus();
-      }
-    } catch {
-      errorDiv.textContent = "Ошибка при проверке пароля";
+      await signInWithEmailAndPassword(auth, email, password);
+      // При успешном входе onAuthStateChanged переключит интерфейс
+    } catch (error) {
+      authError.textContent = "Ошибка входа: " + error.message;
     }
   });
 
-  input.addEventListener("keydown", e => {
-    if (e.key === "Enter") btn.click();
+  // Вход по Enter в полях
+  [emailInput, passwordInput].forEach(el => {
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loginBtn.click();
+    });
   });
+
+  // Выход
+  logoutBtn.addEventListener("click", () => {
+    signOut(auth);
+  });
+
+  // Автоматический контроль состояния авторизации
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      authWrapper.style.display = "none";
+      adminContent.style.display = "block";
+      loadApplications();
+    } else {
+      authWrapper.style.display = "flex";
+      adminContent.style.display = "none";
+      emailInput.value = "";
+      passwordInput.value = "";
+      authError.textContent = "";
+    }
+  });
+
 </script>
 
-<script src="js/index.js"></script>
 </body>
 </html>
