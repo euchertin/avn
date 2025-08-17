@@ -8,7 +8,8 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  updateDoc
+  updateDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
 const IMGBB_API_KEY = "8991694a4eefb36967a0130b1383d524";
@@ -164,24 +165,23 @@ async function submitApplication(event) {
       rulerName: escapeHtml(form.rulerName.value.trim()),
       currencyName: escapeHtml(form.currencyName.value.trim()),
       status: "pending",
-      timestamp: new Date()
+      timestamp: serverTimestamp() // 👈 исправлено
     };
 
     // Валидация строго по спискам
-if (!allowedRuleForms.includes(applicationData.ruleForm)) {
-  alert("Пожалуйста, выберите допустимую форму правления из списка.");
-  submitBtn.disabled = false;
-  submitBtn.textContent = originalBtnText;
-  return;
-}
+    if (!allowedRuleForms.includes(applicationData.ruleForm)) {
+      alert("Пожалуйста, выберите допустимую форму правления из списка.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalBtnText;
+      return;
+    }
 
-if (!allowedRecognitions.includes(applicationData.recognition)) {
-  alert("Пожалуйста, выберите допустимый тип устройства государства из списка.");
-  submitBtn.disabled = false;
-  submitBtn.textContent = originalBtnText;
-  return;
-}
-
+    if (!allowedRecognitions.includes(applicationData.recognition)) {
+      alert("Пожалуйста, выберите допустимый тип устройства государства из списка.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalBtnText;
+      return;
+    }
 
     const flagFile = form.flag.files[0];
     const photoFile = form.photo.files[0];
