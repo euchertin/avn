@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/index.css" />
 
 <link rel="icon" href="logo.svg" type="image/svg+xml" />
-<title>Время | АВН</title>
+<title>Правила | АВН</title>
 <style>
   h1 {
     font-size: 3rem;
@@ -107,10 +107,10 @@
           <a href="map.html">Карта</a>
           <a href="countries.html">Страны</a>
           <a href="reg.html">Вступить</a>
-          <a href="time.html">Время</a>
+          <a href="time.html">Правила</a>
         </div>
         <div class="vk-link">
-          <a href="https://vk.com/avncommunity">
+          <a href="https://vk.com/uvn_offical">
             <img src="images/vk1.svg" alt="VK" class="vk-logo vk-small" width="50" />
           </a>
         </div>
@@ -119,47 +119,13 @@
   </header>
 
   <main>
-    <h1>Ускоренное время</h1>
+    <h1>СКОРО</h1>
     <div id="time">Загрузка...</div>
     <div id="info">
-      Начало отсчёта: 1 декабря 1954 00:00:00<br />
-      Ускорение: x30
+     
     </div>
   </main>
-<script>
-  
-const realStart = Date.UTC(2025, 5, 24, 19, 14, 0); // Месяц 4 — это май
 
-// Виртуальная дата, от которой идёт ускорение (например, 1954-12-01)
-const virtualStart = Date.UTC(2019, 5, 1, 0, 0, 0);
-
-const speed = 30;
-const timeElem = document.getElementById('time');
-
-function updateTime() {
-  const now = Date.now();
-  const realElapsed = now - realStart;
-  const virtualElapsed = realElapsed * speed;
-
-  const currentVirtual = new Date(virtualStart + virtualElapsed);
-
-  const options = {
-    year: 'numeric',
-    month: 'numeric',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-    timeZone: 'UTC' // можно убрать, если нужен локальный
-  };
-
-  timeElem.textContent = currentVirtual.toLocaleString('ru-RU', options);
-}
-
-updateTime();
-setInterval(updateTime, 1000);
-</script>
   <script src="js/index.js"></script>
 
   
