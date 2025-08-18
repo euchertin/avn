@@ -400,7 +400,7 @@ textarea {
   padding: 20px;
   font-size: 16px;
   height: 220px;
-  width: 500px;
+  width: 220px;
   display: flex;
   overflow: hidden;
   position: relative;
@@ -409,7 +409,8 @@ textarea {
 }
 .valuta-text {
   margin-top: 9px;
-  margin-left: 20px
+  margin-left: 20px;
+  display: none
 }
 
 @media (max-width: 480px) {
