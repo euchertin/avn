@@ -26,7 +26,7 @@ html, body {
 header {
   width: 100%;
   padding: 15px 0;
-  background: #001725;
+    background: #1b1b1b;
   position: relative;
   z-index: 10000;
   font-family: 'Futura', sans-serif;

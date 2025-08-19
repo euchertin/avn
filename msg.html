@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RoomCode Messenger</title>
+  <style>
+    :root{
+      --bg:#0e1116;--surface:#141922;--accent:#4f8cff;--text:#e6e6e6;--muted:#9aa4b2;--danger:#ff6161;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Futura", Arial, sans-serif}
+    .wrap{max-width:920px;margin:0 auto;padding:20px}
+    .card{background:var(--surface);border:1px solid #1f2531;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+    .row{display:flex;gap:12px;align-items:center}
+    .col{display:flex;flex-direction:column;gap:8px}
+    .grid{display:grid;gap:10px}
+    .btn{padding:10px 14px;border:1px solid #2a3547;border-radius:12px;background:#1b2330;color:var(--text);cursor:pointer}
+    .btn:hover{background:#222c3c}
+    .btn.acc{background:var(--accent);border-color:transparent;color:#071022}
+    .btn.acc:hover{filter:brightness(1.05)}
+    .btn.ghost{background:transparent}
+    input,textarea{background:#0f1420;border:1px solid #2a3547;border-radius:12px;padding:10px;color:var(--text);outline:none}
+    input::placeholder{color:var(--muted)}
+    .muted{color:var(--muted);font-size:13px}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .codebox{background:#0b0f18;border:1px dashed #2a3547;border-radius:12px;padding:12px}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #1f2531}
+    .header .title{font-weight:700}
+    .content{padding:16px}
+    .chat{height:52vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+    .msg{display:flex;gap:8px;align-items:flex-end;max-width:80%}
+    .msg.me{margin-left:auto;flex-direction:row-reverse}
+    .bubble{padding:10px 12px;border-radius:14px;background:#101829;border:1px solid #273449}
+    .msg.me .bubble{background:#0c1a33;border-color:#2b4775}
+    .msg .meta{font-size:12px;color:var(--muted)}
+    .footer{display:flex;gap:10px}
+    .danger{color:var(--danger)}
+    .hidden{display:none}
+    @media (max-width:640px){ .chat{height:58vh} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="authCard">
+      <div class="header"><div class="title">RoomCode Messenger</div><div class="muted">Firebase (анонимная авторизация)</div></div>
+      <div class="content grid">
+        <div class="col">
+          <label>Ваш ник (виден в комнате):</label>
+          <input id="nickname" placeholder="Например, Евгений" />
+        </div>
+        <div class="row">
+          <button class="btn acc" id="createRoomBtn">Создать комнату</button>
+          <div class="col" style="flex:1">
+            <label>Или введите код комнаты:</label>
+            <div class="row">
+              <input id="joinCode" placeholder="ABC123" class="mono" style="text-transform:uppercase" />
+              <button class="btn" id="joinBtn">Войти</button>
+            </div>
+          </div>
+        </div>
+        <p class="muted">Создайте комнату → получите код → отправьте другу. Друг вводит код и вы сразу общаетесь.</p>
+        <details>
+          <summary class="muted">Настройка Firebase</summary>
+          <div class="codebox mono" style="overflow:auto">
+            Вставьте ваш <b>firebaseConfig</b> в коде ниже (поиск по строке <i>REPLACE_WITH_YOUR_CONFIG</i>). Используется SDK 11.
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="card hidden" id="roomCard">
+      <div class="header">
+        <div>
+          <div class="title">Комната <span id="roomCodeDisplay" class="mono"></span></div>
+          <div class="muted">Поделитесь кодом с собеседником</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="copyCodeBtn">Скопировать код</button>
+          <button class="btn ghost" id="leaveBtn">Выйти</button>
+        </div>
+      </div>
+      <div class="content grid">
+        <div id="sysWarning" class="muted"></div>
+        <div id="chat" class="chat" aria-live="polite"></div>
+        <div class="footer">
+          <input id="messageInput" placeholder="Сообщение..." />
+          <button class="btn acc" id="sendBtn">Отправить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // ===== Firebase SDK v11 (модульная) =====
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp, collection, addDoc, query, orderBy, onSnapshot, limit, updateDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyBtcsiDCvGMBHoNKd7CxrS9w6zG0wnNzIc",
+  authDomain: "messagecr-1e301.firebaseapp.com",
+  projectId: "messagecr-1e301",
+  storageBucket: "messagecr-1e301.firebasestorage.app",
+  messagingSenderId: "498943600919",
+  appId: "1:498943600919:web:b0cc23f1f4a91fac52af52",
+  measurementId: "G-7LT8E14VWG"
+};
+
+    if (!getApps().length) initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    // ====== UI refs ======
+    const authCard = document.getElementById('authCard');
+    const roomCard = document.getElementById('roomCard');
+    const nicknameEl = document.getElementById('nickname');
+    const joinCodeEl = document.getElementById('joinCode');
+    const createBtn = document.getElementById('createRoomBtn');
+    const joinBtn = document.getElementById('joinBtn');
+    const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+    const copyCodeBtn = document.getElementById('copyCodeBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const chatEl = document.getElementById('chat');
+    const inputEl = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const warningEl = document.getElementById('sysWarning');
+
+    let currentRoomCode = null;
+    let user = null;
+    let unsubChat = null;
+
+    // Sign-in anonymously
+    onAuthStateChanged(auth, async (u) => {
+      if (!u) {
+        await signInAnonymously(auth).catch(console.error);
+      } else {
+        user = u;
+      }
+    });
+
+    function randCode(len = 6){
+      const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // без похожих символов
+      let out='';
+      crypto.getRandomValues(new Uint32Array(len)).forEach(n=> out += alphabet[n % alphabet.length]);
+      return out;
+    }
+
+    function show(el){ el.classList.remove('hidden'); }
+    function hide(el){ el.classList.add('hidden'); }
+    function scrollBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
+
+    async function createRoom(){
+      const nick = (nicknameEl.value || 'Гость').trim().slice(0,32);
+      const code = randCode();
+      const roomRef = doc(db, 'rooms', code);
+      await setDoc(roomRef, {
+        createdAt: serverTimestamp(),
+        creatorUid: user?.uid || null,
+        active: true
+      });
+      // system join stamp for creator
+      await addDoc(collection(roomRef, 'messages'), {
+        t: serverTimestamp(),
+        uid: user?.uid || null,
+        name: nick,
+        text: `👋 ${nick} создал комнату`,
+        sys: true
+      });
+      enterRoom(code, nick);
+    }
+
+    async function enterRoom(code, nick){
+      currentRoomCode = code.toUpperCase();
+      roomCodeDisplay.textContent = currentRoomCode;
+      hide(authCard); show(roomCard);
+      warningEl.textContent = '';
+
+      const roomRef = doc(db, 'rooms', currentRoomCode);
+      const snap = await getDoc(roomRef);
+      if (!snap.exists()){
+        warningEl.innerHTML = `<span class="danger">Комната не найдена.</span> Проверьте код.`;
+        hide(roomCard); show(authCard);
+        return;
+      }
+      // optional: mark active ping
+      try{ await updateDoc(roomRef, { lastJoinAt: serverTimestamp() }); }catch{}
+
+      // live messages
+      if (unsubChat) unsubChat();
+      const q = query(collection(roomRef, 'messages'), orderBy('t','asc'), limit(500));
+      unsubChat = onSnapshot(q, (qs) => {
+        chatEl.innerHTML = '';
+        qs.forEach(docSnap => {
+          const m = docSnap.data();
+          renderMsg(m);
+        });
+        scrollBottom();
+      });
+
+      // send handler
+      function send(){
+        const text = inputEl.value.trim();
+        if (!text) return;
+        addDoc(collection(roomRef, 'messages'), {
+          t: serverTimestamp(),
+          uid: user?.uid || null,
+          name: nick,
+          text
+        });
+        inputEl.value='';
+      }
+      sendBtn.onclick = send;
+      inputEl.onkeydown = (e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+    }
+
+    function renderMsg(m){
+      const isMe = m.uid && user && m.uid === user.uid;
+      const wrap = document.createElement('div');
+      wrap.className = 'msg' + (isMe ? ' me' : '');
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const who = m.sys ? 'Система' : (m.name || 'Гость');
+      meta.textContent = who;
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = m.text || '';
+      wrap.appendChild(meta);
+      wrap.appendChild(bubble);
+      chatEl.appendChild(wrap);
+    }
+
+    // ===== UI wiring =====
+    createBtn.onclick = async () => {
+      if (!user) await signInAnonymously(auth);
+      await createRoom();
+    };
+
+    joinBtn.onclick = async () => {
+      const code = joinCodeEl.value.trim();
+      const nick = (nicknameEl.value || 'Гость').trim().slice(0,32);
+      if (!code) return;
+      if (!user) await signInAnonymously(auth);
+      await enterRoom(code, nick);
+    };
+
+    copyCodeBtn.onclick = async () => {
+      try{
+        await navigator.clipboard.writeText(currentRoomCode);
+        copyCodeBtn.textContent = 'Скопировано';
+        setTimeout(()=> copyCodeBtn.textContent='Скопировать код', 1200);
+      }catch{}
+    };
+
+    leaveBtn.onclick = () => {
+      currentRoomCode = null;
+      if (unsubChat) unsubChat();
+      chatEl.innerHTML='';
+      show(authCard); hide(roomCard);
+    };
+  </script>
+
+]н
+</body>
+</html>
