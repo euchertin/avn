@@ -1,265 +1,662 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RoomCode Messenger</title>
-  <style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CRMessenger — Mobile friendly</title>
+<style>
     :root{
-      --bg:#0e1116;--surface:#141922;--accent:#4f8cff;--text:#e6e6e6;--muted:#9aa4b2;--danger:#ff6161;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Futura", Arial, sans-serif}
-    .wrap{max-width:920px;margin:0 auto;padding:20px}
-    .card{background:var(--surface);border:1px solid #1f2531;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
-    .row{display:flex;gap:12px;align-items:center}
-    .col{display:flex;flex-direction:column;gap:8px}
-    .grid{display:grid;gap:10px}
-    .btn{padding:10px 14px;border:1px solid #2a3547;border-radius:12px;background:#1b2330;color:var(--text);cursor:pointer}
-    .btn:hover{background:#222c3c}
-    .btn.acc{background:var(--accent);border-color:transparent;color:#071022}
-    .btn.acc:hover{filter:brightness(1.05)}
-    .btn.ghost{background:transparent}
-    input,textarea{background:#0f1420;border:1px solid #2a3547;border-radius:12px;padding:10px;color:var(--text);outline:none}
-    input::placeholder{color:var(--muted)}
-    .muted{color:var(--muted);font-size:13px}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-    .codebox{background:#0b0f18;border:1px dashed #2a3547;border-radius:12px;padding:12px}
-    .header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #1f2531}
-    .header .title{font-weight:700}
-    .content{padding:16px}
-    .chat{height:52vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
-    .msg{display:flex;gap:8px;align-items:flex-end;max-width:80%}
-    .msg.me{margin-left:auto;flex-direction:row-reverse}
-    .bubble{padding:10px 12px;border-radius:14px;background:#101829;border:1px solid #273449}
-    .msg.me .bubble{background:#0c1a33;border-color:#2b4775}
-    .msg .meta{font-size:12px;color:var(--muted)}
-    .footer{display:flex;gap:10px}
-    .danger{color:var(--danger)}
-    .hidden{display:none}
-    @media (max-width:640px){ .chat{height:58vh} }
-  </style>
+  --bg:#0e0e10;
+  --sidebar:#17171a;
+  --list:#1d1d20;
+  --chat:#121214;
+  --divider:#2a2a2f;
+  --me:#3f424a;
+  --other:#2a2c33;
+  --text:#f0f0f2;
+  --muted:#a2a2ad;
+  --accent:#3a3a3f;
+  --accent-2:#4a4a4f;
+  --radius-xl:18px;
+  --radius-lg:14px;
+  --radius-md:10px;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+/* Базовые сбросы */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Segoe UI", Roboto, system-ui, -apple-system, Arial, sans-serif;
+  display:grid;
+  grid-template-columns:84px 1fr 320px;
+  gap:0;
+  height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Сайдбар */
+.sidebar{
+  background:var(--sidebar);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:14px 10px;
+  gap:14px;
+  box-shadow:var(--shadow);
+}
+.side-btn{
+  width:56px;height:56px;border-radius:14px;background:#222227;
+  display:grid;place-items:center;font-size:22px;cursor:pointer;
+  user-select:none;transition:.12s;border:1px solid #2b2b30;
+}
+.side-btn:hover{transform:translateY(-2px);background:#26262c}
+
+/* Основной чат */
+.chat{
+  background:var(--chat);
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  position:relative;
+  min-width:0; /* важно для корректного авторазмера flex-children */
+}
+
+/* Хедер */
+.chat-header{
+  padding:12px;
+  border-bottom:1px solid var(--divider);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  justify-content:space-between;
+  background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(0,0,0,0));
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.toggle-rooms{display:none;background:transparent;border:none;color:var(--text);font-size:22px;cursor:pointer}
+.chat-title{font-size:18px;font-weight:800}
+.chat-sub{color:var(--muted);font-size:12px}
+
+/* Контейнер сообщений — единый источник правды */
+.messages {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:18px 18px 120px; /* padding-bottom учитывает композер */
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  flex:1;
+  min-height:0; /* критично для корректного скролла внутри flex */
+  width:100%;
+}
+
+/* Базовая карточка сообщения (bubble) */
+.bubble{
+  display:inline-block;
+  max-width:72%;
+  padding:12px 14px;
+  border-radius:16px;
+  line-height:1.4;
+  position:relative;
+  word-wrap:break-word;
+  white-space:pre-wrap;
+  box-shadow:var(--shadow);
+  transition:transform .12s ease,opacity .12s ease;
+  opacity:0;
+  transform:translateY(6px);
+}
+
+/* Показать анимацию */
+.bubble.show{opacity:1;transform:translateY(0)}
+
+/* Разные состояния отправителя */
+.from-me{
+  align-self:flex-end;
+  background:linear-gradient(135deg,#3f424a,#50545c);
+  color:#eef1f6;
+  border-bottom-right-radius:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,.45);
+  margin-left:12px;
+}
+.from-other{
+  align-self:flex-start;
+  background:linear-gradient(135deg,#232327,#2f3136);
+  color:#eef1f6;
+  border-bottom-left-radius:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+  margin-right:12px;
+}
+
+/* Системные сообщения (центрированные) */
+.message.system, .bubble.system{
+  align-self:center;
+  background:transparent;
+  color:var(--muted);
+  font-size:13px;
+  box-shadow:none;
+}
+
+/* Метаданные внутри пузырька */
+.meta{font-size:11px;color:var(--muted);margin-bottom:8px}
+
+/* Медиа внутри сообщения */
+.media img{max-width:100%;height:auto;border-radius:12px;display:block;margin-top:8px}
+.media audio{width:100%;margin-top:8px}
+
+/* Композер (поле ввода) */
+.composer{
+  padding:12px;
+  border-top:1px solid var(--divider);
+  display:flex;
+  gap:8px;
+  align-items:center;
+  background:#0f1012;
+  position:relative;
+  z-index:10;
+}
+.file-preview{
+  display:flex;align-items:center;gap:8px;background:#161619;border-radius:10px;padding:6px 8px;border:1px solid #232326;flex-shrink:0;
+}
+.file-preview img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+.file-preview .meta{font-size:12px;color:var(--muted)}
+.file-preview .remove{background:transparent;border:1px solid #333;color:var(--text);border-radius:8px;padding:6px;cursor:pointer}
+
+.composer .input{
+  border-radius:12px;padding:10px 12px;font-size:15px;flex:1;background:#121214;border:1px solid #222224;color:var(--text);outline:none;
+}
+
+/* Кнопки */
+.btn{
+  border:none;border-radius:12px;padding:10px 12px;background:var(--accent);color:#0b0b0c;cursor:pointer;font-weight:600;transition:.12s;box-shadow:0 4px 14px rgba(0,0,0,.25);
+}
+.btn:hover{background:var(--accent-2)}
+
+/* Список комнат (правый сайдбар) */
+.list{
+  background:var(--list);
+  border-left:1px solid var(--divider);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  min-width:260px;
+  max-width:360px;
+}
+.list-header{padding:12px;border-bottom:1px solid var(--divider);display:flex;flex-direction:column;gap:8px}
+.field{display:flex;gap:8px;align-items:center}
+.input{border:none;outline:none;border-radius:12px;padding:10px 12px;background:#202026;color:var(--text);font-size:14px}
+.rooms{overflow:auto;padding:8px}
+
+/* Элемент комнаты */
+.room-item{
+  display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;user-select:none;transition:.12s;border:1px solid transparent;position:relative;
+}
+.room-item:hover{background:#24242a;border-color:#2e2e36}
+.room-item.active{background:#2a2a31;border-color:#33333b}
+.room-avatar{width:40px;height:40px;border-radius:10px;background:#2b2b33;display:grid;place-items:center;color:#cfd8ff;font-weight:700;font-size:14px;border:1px solid #34343c}
+.room-title{font-weight:700;font-size:14px}
+.room-sub{font-size:12px;color:var(--muted)}
+.leave-btn{background:transparent;border:1px solid #333;color:var(--text);border-radius:8px;padding:6px 8px;cursor:pointer}
+
+/* Оверлей мобильных комнат */
+.rooms-overlay-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1400;opacity:0;transition:opacity .18s ease}
+.rooms-overlay{display:none;position:fixed;top:0;bottom:0;right:0;width:80%;max-width:360px;background:var(--list);z-index:1500;box-shadow:-8px 0 30px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .22s cubic-bezier(.2,.9,.2,1);overflow:auto}
+.rooms-overlay-backdrop.show{display:block;opacity:1}
+.rooms-overlay.open{display:block;transform:translateX(0)}
+
+/* Стили для скроллбаров */
+.messages::-webkit-scrollbar,.rooms::-webkit-scrollbar{width:10px}
+.messages::-webkit-scrollbar-thumb,.rooms::-webkit-scrollbar-thumb{background:#3a3a44;border-radius:10px}
+
+/* --- Мобильная адаптация --- */
+@media (max-width:1000px){
+
+  /* Убираем боковые панели, оставляем только чат */
+  body{grid-template-columns:0 1fr 0}
+  .sidebar{display:none}
+  .list{display:none}
+  .toggle-rooms{display:inline-block}
+
+  /* Хедер */
+  .chat-header{padding:10px 12px}
+  .chat-title{font-size:18px}
+  .chat-sub{font-size:12px;color:var(--muted)}
+
+  /* Важные фиксы для сообщений на мобилке */
+  .messages{
+    padding:12px 12px calc(96px + env(safe-area-inset-bottom));
+    gap:10px;
+  }
+
+  .bubble{
+    max-width:85%;
+    padding:12px 14px;
+    border-radius:16px;
+    font-size:16px;
+    transition:transform .16s ease,opacity .16s ease;
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+  }
+
+  .from-me{ align-self:flex-end; margin-left:18px; }
+  .from-other{ align-self:flex-start; margin-right:18px; }
+
+  /* Композер — фиксируем внизу, учитываем safe-area */
+  .composer{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:env(safe-area-inset-bottom);
+    padding:12px;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    background: linear-gradient(180deg,#0f1012,#18181b);
+    border-top-left-radius:16px;
+    border-top-right-radius:16px;
+    z-index:1600;
+    box-shadow:0 -8px 30px rgba(0,0,0,.6);
+  }
+  .composer .input{
+    flex:1;font-size:16px;padding:12px 14px;border-radius:14px;background:#0f1012;border:1px solid #222224;color:var(--text);
+  }
+  .btn{padding:10px 14px;border-radius:14px}
+
+  .file-preview img{width:48px;height:48px;border-radius:10px}
+
+  .rooms-overlay{width:86%}
+  .rooms{padding:8px 6px}
+  .room-avatar{width:36px;height:36px}
+  .room-title{font-size:13px}
+  .room-sub{font-size:11px}
+}
+
+/* Дополнительная тонкая адаптация для очень маленьких экранов */
+@media (max-width:600px){
+  .bubble{max-width:92%;padding:10px 12px;border-radius:14px;font-size:15px}
+  .from-me{margin-left:12px}
+  .from-other{margin-right:12px}
+  .composer{padding:10px}
+  .composer .input{font-size:15px;padding:10px 12px}
+  .file-preview img{width:44px;height:44px}
+  .toggle-rooms{font-size:20px}
+}
+
+/* Утилиты и мелкие правки */
+.hidden{display:none !important}
+.center{display:flex;align-items:center;justify-content:center}
+
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" id="authCard">
-      <div class="header"><div class="title">RoomCode Messenger</div><div class="muted">Firebase (анонимная авторизация)</div></div>
-      <div class="content grid">
-        <div class="col">
-          <label>Ваш ник (виден в комнате):</label>
-          <input id="nickname" placeholder="Например, Евгений" />
-        </div>
-        <div class="row">
-          <button class="btn acc" id="createRoomBtn">Создать комнату</button>
-          <div class="col" style="flex:1">
-            <label>Или введите код комнаты:</label>
-            <div class="row">
-              <input id="joinCode" placeholder="ABC123" class="mono" style="text-transform:uppercase" />
-              <button class="btn" id="joinBtn">Войти</button>
-            </div>
-          </div>
-        </div>
-        <p class="muted">Создайте комнату → получите код → отправьте другу. Друг вводит код и вы сразу общаетесь.</p>
-        <details>
-          <summary class="muted">Настройка Firebase</summary>
-          <div class="codebox mono" style="overflow:auto">
-            Вставьте ваш <b>firebaseConfig</b> в коде ниже (поиск по строке <i>REPLACE_WITH_YOUR_CONFIG</i>). Используется SDK 11.
-          </div>
-        </details>
+<aside class="sidebar" aria-hidden="true">
+  <div class="side-btn" id="btnHome" title="Домой">🏠</div>
+  <div class="side-btn" id="btnCreate" title="Создать комнату">➕</div>
+  <div class="side-btn" id="btnSettings" title="Ник / настройки">⚙️</div>
+</aside>
+<main class="chat" role="main">
+  <div class="chat-header">
+    <div class="header-left">
+      <button class="toggle-rooms" id="toggleRoomsBtn" title="Комнаты">☰</button>
+      <div style="display:flex;flex-direction:column">
+        <div class="chat-title" id="roomTitle">Выберите комнату</div>
+        <div class="chat-sub" id="roomSub">Код не выбран</div>
       </div>
     </div>
-
-    <div class="card hidden" id="roomCard">
-      <div class="header">
-        <div>
-          <div class="title">Комната <span id="roomCodeDisplay" class="mono"></span></div>
-          <div class="muted">Поделитесь кодом с собеседником</div>
-        </div>
-        <div class="row">
-          <button class="btn" id="copyCodeBtn">Скопировать код</button>
-          <button class="btn ghost" id="leaveBtn">Выйти</button>
-        </div>
-      </div>
-      <div class="content grid">
-        <div id="sysWarning" class="muted"></div>
-        <div id="chat" class="chat" aria-live="polite"></div>
-        <div class="footer">
-          <input id="messageInput" placeholder="Сообщение..." />
-          <button class="btn acc" id="sendBtn">Отправить</button>
-        </div>
-      </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="chip" id="shareCode" style="display:none;cursor:pointer;font-size:13px;padding:6px 10px;border-radius:10px;background:#1f1f23;border:1px solid #2e2e33"></div>
     </div>
   </div>
-
-  <script type="module">
-    // ===== Firebase SDK v11 (модульная) =====
-    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, serverTimestamp, collection, addDoc, query, orderBy, onSnapshot, limit, updateDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-  apiKey: "AIzaSyBtcsiDCvGMBHoNKd7CxrS9w6zG0wnNzIc",
-  authDomain: "messagecr-1e301.firebaseapp.com",
-  projectId: "messagecr-1e301",
-  storageBucket: "messagecr-1e301.firebasestorage.app",
-  messagingSenderId: "498943600919",
-  appId: "1:498943600919:web:b0cc23f1f4a91fac52af52",
-  measurementId: "G-7LT8E14VWG"
+  <div class="messages" id="messages" aria-live="polite"></div>
+  <div class="composer">
+    <div id="filePreviewContainer" style="display:none"></div>
+    <input class="input" id="msgInput" placeholder="Сообщение... (Enter — отправить)" />
+    <input type="file" id="filePicker" accept="image/*,audio/*" hidden />
+    <button class="btn" id="attachBtn" title="Прикрепить">📎</button>
+    <button class="btn" id="sendBtn" title="Отправить">Отправить</button>
+  </div>
+</main>
+<section class="list" id="desktopList">
+  <div class="list-header">
+    <div style="display:flex;gap:8px">
+      <input class="input" id="nickname" placeholder="Ваш ник (по умолчанию: Гость)" style="flex:1" />
+      <button class="btn" id="saveNick">OK</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="input" id="joinCode" placeholder="Код комнаты: ABC123" style="text-transform:uppercase;flex:1" />
+      <button class="btn" id="joinBtn">Войти</button>
+    </div>
+  </div>
+  <div class="rooms" id="rooms"></div>
+</section>
+<div class="rooms-overlay-backdrop" id="roomsBackdrop" aria-hidden="true"></div>
+<section class="rooms-overlay" id="roomsOverlay" aria-hidden="true">
+  <div style="padding:12px;border-bottom:1px solid #2a2a2f;display:flex;gap:8px;align-items:center">
+    <button class="btn" id="closeRoomsMobile">←</button>
+    <div style="flex:1;font-weight:700">Комнаты</div>
+    <button class="btn" id="mobileLoadSaved">Загрузить</button>
+  </div>
+  <div style="padding:12px" id="roomsOverlayContent">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input class="input" id="nickname_mobile" placeholder="Ник" style="flex:1" />
+      <button class="btn" id="saveNick_mobile">OK</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input class="input" id="joinCode_mobile" placeholder="Код комнаты: ABC123" style="text-transform:uppercase;flex:1" />
+      <button class="btn" id="joinBtn_mobile">Войти</button>
+    </div>
+    <div class="rooms" id="roomsMobileList" style="padding:0"></div>
+  </div>
+</section>
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-storage.js";
+const firebaseConfig = { apiKey:"AIzaSyBtcsiDCvGMBHoNKd7CxrS9w6zG0wnNzIc", authDomain:"messagecr-1e301.firebaseapp.com", projectId:"messagecr-1e301", storageBucket:"messagecr-1e301.appspot.com", messagingSenderId:"498943600919", appId:"1:498943600919:web:b0cc23f1f4a91fac52af52" };
+if(!getApps().length) initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
+const roomsEl = document.getElementById('rooms');
+const roomsMobileList = document.getElementById('roomsMobileList');
+const roomsOverlay = document.getElementById('roomsOverlay');
+const roomsBackdrop = document.getElementById('roomsBackdrop');
+const toggleRoomsBtn = document.getElementById('toggleRoomsBtn');
+const closeRoomsMobile = document.getElementById('closeRoomsMobile');
+const mobileLoadSaved = document.getElementById('mobileLoadSaved');
+const roomTitle = document.getElementById('roomTitle');
+const roomSub = document.getElementById('roomSub');
+const shareCode = document.getElementById('shareCode');
+const messagesEl = document.getElementById('messages');
+const msgInput = document.getElementById('msgInput');
+const sendBtn = document.getElementById('sendBtn');
+const filePicker = document.getElementById('filePicker');
+const attachBtn = document.getElementById('attachBtn');
+const filePreviewContainer = document.getElementById('filePreviewContainer');
+const joinCodeInput = document.getElementById('joinCode');
+const joinBtn = document.getElementById('joinBtn');
+const btnCreate = document.getElementById('btnCreate');
+const nicknameInput = document.getElementById('nickname');
+const saveNickBtn = document.getElementById('saveNick');
+const nicknameInputMobile = document.getElementById('nickname_mobile');
+const saveNickBtnMobile = document.getElementById('saveNick_mobile');
+const joinCodeMobile = document.getElementById('joinCode_mobile');
+const joinBtnMobile = document.getElementById('joinBtn_mobile');
+let user = null;
+onAuthStateChanged(auth, async (u) => {
+  if (!u) await signInAnonymously(auth);
+  else {
+    user = u;
+    renderRoomsList();
+    syncMobileNick();
+  }
+});
+let nickname = localStorage.getItem('crm_nick') || 'Гость';
+nicknameInput.value = nickname;
+nicknameInputMobile.value = nickname;
+saveNickBtn.onclick = saveNick;
+saveNickBtnMobile.onclick = saveNick;
+function saveNick(){
+  nickname = (nicknameInput.value || nicknameInputMobile.value || 'Гость').trim().slice(0,32);
+  nicknameInput.value = nickname;
+  nicknameInputMobile.value = nickname;
+  localStorage.setItem('crm_nick', nickname);
+}
+let currentRoom = null;
+let unsubMessages = null;
+let myRooms = JSON.parse(localStorage.getItem('crm_myRooms') || '[]');
+function randCode(len=6){
+  const alphabet='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let out=''; crypto.getRandomValues(new Uint32Array(len)).forEach(n=> out+=alphabet[n%alphabet.length]);
+  return out;
+}
+function escapeHtml(s){ if(!s && s!==0) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
+function renderRoomsList(){
+  roomsEl.innerHTML = '';
+  myRooms.forEach(room=>{
+    const div = document.createElement('div');
+    div.className = 'room-item' + (currentRoom === room.code ? ' active' : '');
+    div.innerHTML = `
+      <div class="room-avatar">${escapeHtml((room.name||room.code).slice(0,2).toUpperCase())}</div>
+      <div style="flex:1">
+        <div class="room-title">${escapeHtml(room.name||('Комната '+room.code))}</div>
+        <div class="room-sub">Код: ${escapeHtml(room.code)}</div>
+      </div>
+      ${room.unread? '<div class="new-msg-badge" style="position:absolute;top:8px;right:48px;width:10px;height:10px;background:#ff4d4d;border-radius:50%;box-shadow:0 0 6px rgba(255,77,77,.9)"></div>' : ''}
+      <button class="leave-btn" data-code="${escapeHtml(room.code)}" title="Удалить из сохранённых">✕</button>`;
+    div.querySelector('.room-avatar').onclick = ()=> openRoom(room.code, room.name || ('Комната '+room.code));
+    div.onclick = (e)=> {
+      if(e.target && e.target.classList && e.target.classList.contains('leave-btn')) return;
+      openRoom(room.code, room.name || ('Комната '+room.code));
+    };
+    roomsEl.appendChild(div);
+    const leaveBtn = div.querySelector('.leave-btn');
+    leaveBtn.onclick = (ev)=>{
+      ev.stopPropagation();
+      const code = leaveBtn.dataset.code;
+      removeFromMyRooms(code);
+    };
+  });
+  roomsMobileList.innerHTML = '';
+  myRooms.forEach(room=>{
+    const div = document.createElement('div');
+    div.className = 'room-item' + (currentRoom === room.code ? ' active' : '');
+    div.style.marginBottom = '6px';
+    div.innerHTML = `
+      <div class="room-avatar">${escapeHtml((room.name||room.code).slice(0,2).toUpperCase())}</div>
+      <div style="flex:1">
+        <div class="room-title">${escapeHtml(room.name||('Комната '+room.code))}</div>
+        <div class="room-sub">Код: ${escapeHtml(room.code)}</div>
+      </div>
+      ${room.unread? '<div class="new-msg-badge" style="position:absolute;top:8px;right:48px;width:10px;height:10px;background:#ff4d4d;border-radius:50%;box-shadow:0 0 6px rgba(255,77,77,.9)"></div>' : ''}
+      <button class="leave-btn" data-code="${escapeHtml(room.code)}" title="Удалить">✕</button>`;
+    div.onclick = (e)=>{
+      if(e.target && e.target.classList && e.target.classList.contains('leave-btn')) return;
+      openRoom(room.code, room.name || ('Комната '+room.code));
+      closeRoomsOverlay();
+    };
+    roomsMobileList.appendChild(div);
+    const leaveBtn = div.querySelector('.leave-btn');
+    leaveBtn.onclick = (ev)=>{
+      ev.stopPropagation();
+      const code = leaveBtn.dataset.code;
+      removeFromMyRooms(code);
+    };
+  });
+}
+async function persistMyRooms(){
+  localStorage.setItem('crm_myRooms', JSON.stringify(myRooms));
+  if(!user) return;
+  try{
+    const userDoc = doc(db, 'userRooms', user.uid);
+    await setDoc(userDoc, { rooms: myRooms }, { merge: true });
+  }catch(err){}
+}
+async function removeFromMyRooms(code){
+  myRooms = myRooms.filter(r=> r.code !== code);
+  await persistMyRooms();
+  renderRoomsList();
+  if(currentRoom === code){
+    currentRoom = null;
+    messagesEl.innerHTML = '';
+    roomTitle.textContent = 'Выберите комнату';
+    roomSub.textContent = 'Код не выбран';
+    shareCode.style.display = 'none';
+    if(unsubMessages){ unsubMessages(); unsubMessages = null; }
+  }
+}
+async function loadMyRoomsFromFirestore(){
+  if(!user) { alert('Сначала дождитесь авторизации (авто-логин)'); return; }
+  try{
+    const userDoc = doc(db, 'userRooms', user.uid);
+    const snap = await getDoc(userDoc);
+    if(!snap.exists()){ alert('Сохранённых комнат не найдено'); return; }
+    const data = snap.data();
+    if(Array.isArray(data.rooms)){
+      myRooms = data.rooms.map(r=>({ code: r.code, name: r.name || ('Комната ' + r.code), unread: !!r.unread }));
+      await persistMyRooms();
+      renderRoomsList();
+      alert('Сохранённые комнаты загружены. Нажмите по комнате, чтобы открыть.');
+    } else {
+      alert('Сохранённых комнат нет');
+    }
+  }catch(err){
+    alert('Ошибка при загрузке сохранённых комнат');
+  }
+}
+async function addToMyRooms(code, name){
+  if(!myRooms.find(r=>r.code===code)){
+    myRooms.push({ code, name, unread:false });
+    await persistMyRooms();
+    renderRoomsList();
+  }
+}
+btnCreate.onclick = async ()=>{
+  if(!user) { alert('Подождите авторизации...'); return; }
+  const code = randCode();
+  const roomRef = doc(db, 'rooms', code);
+  await setDoc(roomRef, { createdAt: serverTimestamp(), name: 'Комната '+code, active: true, creator: user.uid });
+  await addDoc(collection(roomRef, 'messages'), { t: serverTimestamp(), uid: user.uid, name: nickname, text: `👋 ${nickname} создал(а) комнату`, sys: true });
+  await addToMyRooms(code, 'Комната '+code);
+  openRoom(code, 'Комната '+code);
 };
-
-    if (!getApps().length) initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore();
-
-    // ====== UI refs ======
-    const authCard = document.getElementById('authCard');
-    const roomCard = document.getElementById('roomCard');
-    const nicknameEl = document.getElementById('nickname');
-    const joinCodeEl = document.getElementById('joinCode');
-    const createBtn = document.getElementById('createRoomBtn');
-    const joinBtn = document.getElementById('joinBtn');
-    const roomCodeDisplay = document.getElementById('roomCodeDisplay');
-    const copyCodeBtn = document.getElementById('copyCodeBtn');
-    const leaveBtn = document.getElementById('leaveBtn');
-    const chatEl = document.getElementById('chat');
-    const inputEl = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const warningEl = document.getElementById('sysWarning');
-
-    let currentRoomCode = null;
-    let user = null;
-    let unsubChat = null;
-
-    // Sign-in anonymously
-    onAuthStateChanged(auth, async (u) => {
-      if (!u) {
-        await signInAnonymously(auth).catch(console.error);
-      } else {
-        user = u;
+joinBtn.onclick = async ()=> { const code=(joinCodeInput.value||'').trim().toUpperCase(); if(!code) return; await joinRoomByCode(code); };
+joinBtnMobile.onclick = async ()=> { const code=(joinCodeMobile.value||'').trim().toUpperCase(); if(!code) return; await joinRoomByCode(code); };
+async function joinRoomByCode(code){
+  const roomRef = doc(db, 'rooms', code);
+  const snap = await getDoc(roomRef);
+  if(!snap.exists()){ alert('Комната не найдена'); return; }
+  const name = snap.data().name || ('Комната ' + code);
+  await addToMyRooms(code, name);
+  openRoom(code, name);
+}
+function openRoom(code, name){
+  currentRoom = code;
+  roomTitle.textContent = name;
+  roomSub.textContent = 'Код: ' + code;
+  shareCode.style.display = 'inline-block';
+  shareCode.textContent = 'Поделиться кодом: ' + code;
+  shareCode.dataset.code = code;
+  shareCode.onclick = ()=> {
+    navigator.clipboard?.writeText(code).then(()=> {
+      const prev = shareCode.textContent;
+      shareCode.textContent = 'Скопировано!';
+      setTimeout(()=> shareCode.textContent = prev, 1200);
+    });
+  };
+  const roomObj = myRooms.find(r => r.code === code);
+  if(roomObj){ roomObj.unread = false; persistMyRooms(); renderRoomsList(); }
+  if(unsubMessages){ unsubMessages(); unsubMessages = null; }
+  const qMsgs = query(collection(db, 'rooms', code, 'messages'), orderBy('t','asc'));
+  unsubMessages = onSnapshot(qMsgs, (snap) => {
+    messagesEl.innerHTML = '';
+    snap.forEach(d => renderMessage(d.id, d.data()));
+    setTimeout(()=> messagesEl.scrollTop = messagesEl.scrollHeight, 60);
+    snap.docChanges().forEach(change => {
+      if(change.type === 'added'){
+        const m = change.doc.data();
+        if(m.uid !== user.uid){
+          myRooms.forEach(r => { if(r.code !== code) r.unread = true; });
+          persistMyRooms();
+          renderRoomsList();
+        }
       }
     });
-
-    function randCode(len = 6){
-      const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // без похожих символов
-      let out='';
-      crypto.getRandomValues(new Uint32Array(len)).forEach(n=> out += alphabet[n % alphabet.length]);
-      return out;
+  });
+}
+function renderMessage(id,m){
+  const wrap = document.createElement('div');
+  const mine = (m.uid === user?.uid);
+  wrap.className = 'bubble ' + (mine ? 'from-me' : 'from-other');
+  const name = `<div class="meta">${m.sys ? 'Система' : escapeHtml(m.name || 'Гость')}</div>`;
+  const text = m.text ? `<div>${escapeHtml(m.text)}</div>` : '';
+  const media = m.url ? `<div class="media">${ m.type?.startsWith('audio') ? `<audio controls src="${m.url}"></audio>` : `<img src="${m.url}" alt="media" />` }</div>` : '';
+  wrap.innerHTML = name + text + media;
+  messagesEl.appendChild(wrap);
+  setTimeout(()=> wrap.classList.add('show'), 10);
+}
+sendBtn.onclick = sendText;
+msgInput.addEventListener('keydown', (e)=> { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendText(); } });
+async function sendText(){
+  if(!currentRoom) return alert('Сначала выберите комнату');
+  const text = msgInput.value.trim();
+  if(!text && !msgInput._pendingFile) return;
+  if(msgInput._pendingFile){
+    const f = msgInput._pendingFile;
+    const fileRef = ref(storage, `uploads/${currentRoom}/${Date.now()}_${f.name}`);
+    await uploadBytes(fileRef, f);
+    const url = await getDownloadURL(fileRef);
+    await addDoc(collection(db, 'rooms', currentRoom, 'messages'), { t: serverTimestamp(), uid: user?.uid || null, name: nickname, url, type: f.type });
+    msgInput._pendingFile = null;
+    hideFilePreview();
+  }
+  if(text){
+    await addDoc(collection(db, 'rooms', currentRoom, 'messages'), { t: serverTimestamp(), uid: user?.uid || null, name: nickname, text });
+    msgInput.value = '';
+  }
+}
+attachBtn.onclick = ()=> filePicker.click();
+filePicker.onchange = (e)=> { const f = e.target.files?.[0]; if(f){ msgInput._pendingFile = f; showFilePreview(f); } filePicker.value = ''; };
+msgInput.addEventListener('paste', (e)=>{
+  const items = e.clipboardData?.items || [];
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      const f = item.getAsFile();
+      if(f){ msgInput._pendingFile = f; showFilePreview(f); }
+    } else if(item.type === 'text/plain'){
+      const t = e.clipboardData.getData('text/plain');
+      if(t.trim()) msgInput.value += t;
     }
-
-    function show(el){ el.classList.remove('hidden'); }
-    function hide(el){ el.classList.add('hidden'); }
-    function scrollBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
-
-    async function createRoom(){
-      const nick = (nicknameEl.value || 'Гость').trim().slice(0,32);
-      const code = randCode();
-      const roomRef = doc(db, 'rooms', code);
-      await setDoc(roomRef, {
-        createdAt: serverTimestamp(),
-        creatorUid: user?.uid || null,
-        active: true
-      });
-      // system join stamp for creator
-      await addDoc(collection(roomRef, 'messages'), {
-        t: serverTimestamp(),
-        uid: user?.uid || null,
-        name: nick,
-        text: `👋 ${nick} создал комнату`,
-        sys: true
-      });
-      enterRoom(code, nick);
-    }
-
-    async function enterRoom(code, nick){
-      currentRoomCode = code.toUpperCase();
-      roomCodeDisplay.textContent = currentRoomCode;
-      hide(authCard); show(roomCard);
-      warningEl.textContent = '';
-
-      const roomRef = doc(db, 'rooms', currentRoomCode);
-      const snap = await getDoc(roomRef);
-      if (!snap.exists()){
-        warningEl.innerHTML = `<span class="danger">Комната не найдена.</span> Проверьте код.`;
-        hide(roomCard); show(authCard);
-        return;
-      }
-      // optional: mark active ping
-      try{ await updateDoc(roomRef, { lastJoinAt: serverTimestamp() }); }catch{}
-
-      // live messages
-      if (unsubChat) unsubChat();
-      const q = query(collection(roomRef, 'messages'), orderBy('t','asc'), limit(500));
-      unsubChat = onSnapshot(q, (qs) => {
-        chatEl.innerHTML = '';
-        qs.forEach(docSnap => {
-          const m = docSnap.data();
-          renderMsg(m);
-        });
-        scrollBottom();
-      });
-
-      // send handler
-      function send(){
-        const text = inputEl.value.trim();
-        if (!text) return;
-        addDoc(collection(roomRef, 'messages'), {
-          t: serverTimestamp(),
-          uid: user?.uid || null,
-          name: nick,
-          text
-        });
-        inputEl.value='';
-      }
-      sendBtn.onclick = send;
-      inputEl.onkeydown = (e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
-    }
-
-    function renderMsg(m){
-      const isMe = m.uid && user && m.uid === user.uid;
-      const wrap = document.createElement('div');
-      wrap.className = 'msg' + (isMe ? ' me' : '');
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      const who = m.sys ? 'Система' : (m.name || 'Гость');
-      meta.textContent = who;
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble';
-      bubble.textContent = m.text || '';
-      wrap.appendChild(meta);
-      wrap.appendChild(bubble);
-      chatEl.appendChild(wrap);
-    }
-
-    // ===== UI wiring =====
-    createBtn.onclick = async () => {
-      if (!user) await signInAnonymously(auth);
-      await createRoom();
-    };
-
-    joinBtn.onclick = async () => {
-      const code = joinCodeEl.value.trim();
-      const nick = (nicknameEl.value || 'Гость').trim().slice(0,32);
-      if (!code) return;
-      if (!user) await signInAnonymously(auth);
-      await enterRoom(code, nick);
-    };
-
-    copyCodeBtn.onclick = async () => {
-      try{
-        await navigator.clipboard.writeText(currentRoomCode);
-        copyCodeBtn.textContent = 'Скопировано';
-        setTimeout(()=> copyCodeBtn.textContent='Скопировать код', 1200);
-      }catch{}
-    };
-
-    leaveBtn.onclick = () => {
-      currentRoomCode = null;
-      if (unsubChat) unsubChat();
-      chatEl.innerHTML='';
-      show(authCard); hide(roomCard);
-    };
-  </script>
-
-]н
+  }
+});
+function showFilePreview(file){
+  if(!file) return hideFilePreview();
+  filePreviewContainer.innerHTML = '';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'file-preview';
+  if(file.type.startsWith('image/')){
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.onload = ()=> URL.revokeObjectURL(img.src);
+    wrapper.appendChild(img);
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = `<div style="font-weight:700">${escapeHtml(file.name)}</div><div style="color:var(--muted);font-size:12px">${Math.round(file.size/1024)} KB</div>`;
+    wrapper.appendChild(meta);
+  } else if(file.type.startsWith('audio/')){
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = `<div style="font-weight:700">${escapeHtml(file.name)}</div><div style="color:var(--muted);font-size:12px">${Math.round(file.size/1024)} KB — аудио</div>`;
+    wrapper.appendChild(meta);
+  } else {
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = `<div style="font-weight:700">${escapeHtml(file.name)}</div><div style="color:var(--muted);font-size:12px">${Math.round(file.size/1024)} KB</div>`;
+    wrapper.appendChild(meta);
+  }
+  const remove = document.createElement('button');
+  remove.className = 'remove';
+  remove.textContent = 'Удалить';
+  remove.onclick = (e)=>{ e.stopPropagation(); msgInput._pendingFile = null; hideFilePreview(); };
+  wrapper.appendChild(remove);
+  filePreviewContainer.appendChild(wrapper);
+  filePreviewContainer.style.display = 'block';
+}
+function hideFilePreview(){ filePreviewContainer.innerHTML = ''; filePreviewContainer.style.display = 'none'; }
+toggleRoomsBtn.onclick = ()=> { openRoomsOverlay(); };
+closeRoomsMobile.onclick = ()=> { closeRoomsOverlay(); };
+roomsBackdrop.onclick = ()=> { closeRoomsOverlay(); };
+function openRoomsOverlay(){ roomsOverlay.classList.add('open'); roomsBackdrop.classList.add('show'); roomsOverlay.setAttribute('aria-hidden','false'); roomsBackdrop.setAttribute('aria-hidden','false'); renderRoomsList(); }
+function closeRoomsOverlay(){ roomsOverlay.classList.remove('open'); roomsBackdrop.classList.remove('show'); roomsOverlay.setAttribute('aria-hidden','true'); roomsBackdrop.setAttribute('aria-hidden','true'); }
+btnLoadSaved?.addEventListener && btnLoadSaved.addEventListener('click', async ()=> { await loadMyRoomsFromFirestore(); });
+mobileLoadSaved?.addEventListener && mobileLoadSaved.addEventListener('click', async ()=> { await loadMyRoomsFromFirestore(); closeRoomsOverlay(); });
+renderRoomsList();
+syncMobileNick();
+function syncMobileNick(){ nicknameInputMobile.value = nicknameInput.value = localStorage.getItem('crm_nick') || 'Гость'; }
+</script>
 </body>
 </html>
