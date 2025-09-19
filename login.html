@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Регистрация | АВН</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="stylesheet" href="css/signin.css"> 
+  <link rel="stylesheet" href="css/index.css"> 
+<script type="module" src="js/signin.js"></script>
+  <link rel="icon" href="logo.png" type="image/svg+xml" />
+ <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-eval' https://www.gstatic.com https://apis.google.com;
+  img-src 'self' data: https://*.imgbb.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://api.imgbb.com;
+">
+</head>
+
+<body class="dark-mode transition duration-300 flex flex-col min-h-screen">
+
+
+  <header>
+    <div class="container">
+      <nav id="navigation">
+        <img src="logo.png" alt="Логотип сайта" class="logo", width="65px">
+        <a aria-label="mobile menu" class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </a>
+        <div class="menu-links error-page-menu">
+          <a href="index.html">Главная</a>
+          <a href="diary.html">Дневник</a>
+          
+          <a href="new.html">Объявления</a>
+        </div>
+        <div class="vk-link">
+          <a href="https://vk.com/uvn_offical"><img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50px"></a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow flex items-center justify-center px-4 py-8 sm:py-12">
+    <div class="w-full max-w-md p-6 sm:p-8 bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-lg">
+
+      <h2 class="text-2xl font-semibold text-center text-gray-800 dark:text-gray-100">Вход</h2>
+      <p class="mt-2 text-center text-sm text-gray-500">
+        Нет аккаунта? <a href="https://t.me/euchertin" class="text-blue-600 dark:text-blue-400">Напиши сюда</a>
+      </p>
+
+      <form id="loginForm" class="mt-6 space-y-4">
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+            <input id="email" type="email" class="w-full p-4 rounded-3xl focus:ring-0 input-bg-light dark:input-bg-dark input-text-light dark:input-text-dark text-lg" required>
+          </div>
+          
+          <div class="relative">
+            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Пароль</label>
+            <input id="password" type="password" class="w-full p-4 rounded-3xl focus:ring-0 input-bg-light dark:input-bg-dark input-text-light dark:input-text-dark text-lg" required>
+            <button type="button" id="togglePassword" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400 mt-[10px]">
+              <i id="passwordIcon" class="fas fa-eye"></i>
+            </button>
+          </div>
+        
+        <button type="submit" class="w-full py-3 rounded-3xl font-semibold text-lg btn-light dark:btn-dark">
+          Войти
+        </button>
+        <p class="mt-4 text-center text-sm text-gray-500">
+          <a href="https://passport.astrobl.ru/auth/restore_pass" class="text-blue-600 dark:text-blue-400">Забыли пароль?</a>
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <div id="notification" class="notification"></div>
+
+  <footer>
+    <div class="footer-logo">
+      <img src="logo.png" alt="Логотип проекта">
+    </div>
+    <div class="footer-links">
+      <p>14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 </p>
+      <p>14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 🤙 14 шк 🤙 </p>
+    </div>
+   
+    <div class="footer-copy">
+      <p>© 2025 Евгений Чертин. Все права защищены.</p>
+    </div>
+  </footer>
+
+
+  <script src="js/reg.js" type="module"></script>
+  <script src="js/index.js"></script>
+
+</body>
+</html>
