@@ -1,180 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Объединение Виртуальных Наций</title>
-  <link rel="stylesheet" href="css/index.css">
-  <link rel="icon" type="image/x-icon" href="logo.png">
-  <script type="text/javascript" src="https://vk.com/js/api/openapi.js?168"></script>
-  <script src="https://vk.com/js/api/openapi.js?169" type="text/javascript"></script>
-
-
-  <script
-  type="text/javascript"
-  src="https://vk.com/js/api/openapi.js?168"
-  charset="windows-1251"
-></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyDiary</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"/>
+<style>
+  .grade-badge {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:44px;
+    height:30px;
+    padding:0 10px;
+    border-radius:9999px;
+    font-weight:700;
+    font-size:0.95rem;
+  }
+  .lesson-card { transition: transform .14s ease, box-shadow .14s ease; }
+  .lesson-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(2,6,23,0.12); }
+  .swiper-slide { display: flex; justify-content: center; }
+  .day-card { width: 100%; max-width: 900px; }
+  .break-words { word-break: break-word; white-space: pre-wrap; }
+  .day-dot { width:10px; height:10px; border-radius:50%; background:#999; cursor:pointer; transition:0.2s; }
+  .day-dot.active { background:#3b82f6; }
+</style>
 </head>
-<body>
-  <header>
-    <div class="container">
-      <nav id="navigation">
-        <img src="logo.png" alt="Логотип сайта" class="logo" width="60px">
-        <a aria-label="mobile menu" class="nav-toggle">
-          <span></span>
-          <span></span>
-          <span></span>
-        </a>
-        <div class="menu-links menu">
-            <a href="index.html">Главная</a>
-          <a href="diary.html">Дневник</a>
-          
-          <a href="news.html">Объявления</a>
-        </div>
-        <div class="vk-link">
-          <a href="https://vk.com/uvn_offical"><img src="images/vk1.svg" alt="VK Button Logo" class="vk-logo vk-small" width="50px"></a>
-        </div>
-      </nav>
+<body class="dark bg-gray-50 dark:bg-[#060606] text-gray-900 dark:text-gray-100 flex flex-col min-h-screen">
+
+<header class="bg-white dark:bg-[#0b0b0b] border-b dark:border-gray-800">
+  <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="logo.png" alt="logo" class="w-12 h-12 rounded-md">
+      <div>
+        <div class="text-sm text-gray-600 dark:text-gray-400">Мой дневник</div>
+        <div class="text-lg font-semibold">MyDiary</div>
+      </div>
     </div>
-  </header>
-  
-  <section class="photo-section">
-    <picture>
-      <source media="(max-width: 768px)" srcset="images/photo2.png">
-      <img src="images/photo.png" alt="Описание фото" class="horizontal-photo">
-    </picture>
-  </section>
-  
-  <section class="project-description">
-    <h2>О проекте</h2>
-    <p>
-     Объединение Виртуальных Наций (ОВН, англ. United Virtual Nations) — международная виртуальная организация. ОВН был создан для объединения множества стран со своей историей, политикой и событиями, а также развития сотрудничества между виртуальными государствами. Данный проект ни в коем случае не является поддержкой сепаратистских образований, «виртуальные государства» для нас — выдуманные государства, находящиеся на просторе сети ВКонтакте
-    </p>
-    <p>
-ОВН был создана 6 февраля 2022 года в качестве альтернативы Организации Объединённых Виртуальных Государств. Первое глобальное расширение ОВН в июле 2022 года произошло после самой острой фазы кризиса в ООВГ. К концу 2022 года большая часть основных стран ООВГ перешли в ОВН.
-    </p>
-  </section>
- 
-  <div class="carousel-container first-carousel">
-  <div class="carousel-inner">
-   <div class="carousel-item">
-      <h3>🌐 ОВН — это не просто проект</h3>
-      <p>Объединение Виртуальных Наций — это политико-экономическая симуляция современного мира на рубеже 2025 года. Участники управляют государствами, принимая решения, формирующие их курс в условиях глобальной нестабильности.</p>
-    </div>
-    <div class="carousel-item">
-      <h3>📊 Что предлагает Объединение?</h3>
-      <ul class="advantages-list">
-        <li>• Моделирование реальных международных процессов XXI века.</li>
-        <li>• Геополитические конфликты, торговые войны и дипломатические вызовы.</li>
-        <li>• Международные организации, альянсы и многосторонние соглашения.</li>
-        <li>• Управление экономикой, промышленностью, социальной и технологической политикой.</li>
-      </ul>
-    </div>
-    <div class="carousel-item">
-      <h3>🏛 Ваша стратегия — ваш путь</h3>
-      <p>Вы формируете курс своей нации: от налоговой политики до внешних отношений. ОВН предоставляет широкие полномочия и механизмы принятия решений в пределах реалистичных рамок.</p>
-    </div>
-    <div class="carousel-item">
-      <h3>⚖ Историческая точность</h3>
-      <p>Проект исключает фантастику и отклонения от действительности.</p>
-    </div>
-    <div class="carousel-item">
-      <h3>🤝 Международное взаимодействие</h3>
-      <p>Заключайте соглашения, участвуйте в переговорах, вступайте в блоки — от торговых до оборонных. ОВН моделирует современные международные отношения.</p>
-    </div>
-    <div class="carousel-item">
-      <h3>🧠 Развитие навыков</h3>
-      <p>Проект развивает стратегическое мышление, политическую грамотность, способности к переговорам и антикризисному управлению.</p>
-    </div>
-    <div class="carousel-item">
-      <h3>🕰 Погружение в реальность</h3>
-      <p>Вы будете работать с актуальными темами: санкциями, экономическими реформами, цифровизацией, демографическими вызовами и региональными конфликтами.</p>
-    </div>
-    <div class="carousel-item">
-      <h3>🛡 Поддержка и контроль</h3>
-      <p>Администрация ОВН обеспечивает соблюдение регламентов, оперативно реагирует на обращения и поддерживает честную игровую среду.</p>
-    </div>
-    <div class="carousel-item">
-      <h3>🖥 Технологичная платформа</h3>
-      <p>Функциональный сайт упрощает управление страной, взаимодействие с другими участниками и автоматизирует ключевые процессы.</p>
-    </div>
+    <nav class="flex items-center gap-4">
+      <a href="diary.html" class="text-blue-600 font-semibold">Дневник</a>
+      <a href="news.html" class="text-gray-700 dark:text-gray-300 hover:text-blue-500">Объявления</a>
+    </nav>
+  </div>
+</header>
+
+
+<main class="flex-grow container mx-auto px-4 py-8">
+  <!-- WEEK CONTROLS -->
+  <div class="flex items-center justify-between mb-4">
+    <button id="prevWeek" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded">&larr;</button>
+    <div id="weekLabel" class="text-sm font-medium"></div>
+    <button id="nextWeek" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded">&rarr;</button>
   </div>
 
-  <button class="carousel-prev" aria-label="Предыдущий слайд">&#10094;</button>
-  <button class="carousel-next" aria-label="Следующий слайд">&#10095;</button>
-
-  <div class="carousel-indicators"></div> <!-- Индикаторы первой карусели -->
-</div>
-
-
-  <div class="carousel-container second-carousel">
-    <h2 class="carousel-title">ПОСЛЕДНИЕ СОБЫТИЯ</h2>
-    <div class="carousel-inner">
-      <div class="carousel-item">
-        <img src="images/photo3.png" alt="Фото 1" class="carousel-image">
-        
-          <p class="carousel-description">
-          <ul>
-            <li><b>Война в Европе</b></li>
-             <li>Бомбардировки Sqr United</li>
-             <li>Захват административных зданий Sqr United</li>
-             <li>Выход Sqr United из ОВН</li>
-          </ul>
-        </p>
-        
-      </div>
-      <div class="carousel-item">
-        <img src="images/photo4.png" alt="Фото 2" class="carousel-image">
-        <p class="carousel-description">
-          <ul>
-            <li><b>Война в Сирии</b></li>
-            <li>Исламский фронт Освобождения Сирии</li>
-            <li>Участие ЧВК "Вагнер"</li>
-            
-          </ul>
-        </p>
-      </div>
-      <div class="carousel-item">
-        <img src="images/photo5.png" alt="Фото 3" class="carousel-image">
-        <p class="carousel-description">
-          <ul>
-            <li>Война Союзников с Авильшахтом</li> 
- <li>Линия Волохова</li> 
-<li>Подвиг прапорщика В. Лебединского</li> 
-          </ul>
-        </p>
-      </div>
-    </div>
-  
-    <button class="carousel-prev carousel-prev1" aria-label="Предыдущий слайд">&#10094;</button>
-    <button class="carousel-next carousel-next1" aria-label="Следующий слайд">&#10095;</button>
-    
-    <div class="carousel-indicators"></div> <!-- Индикаторы второй карусели -->
+  <!-- Swiper Days -->
+  <div class="flex justify-center gap-2 mb-4" id="dayDots"></div>
+  <div class="swiper daySwiper">
+    <div class="swiper-wrapper" id="daysContainer"></div>
   </div>
+  
 
- 
+  <div id="loadError" class="mt-4 text-sm text-red-600 hidden">Не удалось загрузить diary_data.json</div>
+</main>
 
+<footer class="bg-gray-100 dark:bg-[#070707] py-6 mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+  © 2025 Евгений Чертин
+</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+<script>
+let weeksData = [];
+let currentWeek = 0;
+let daySwiper;
 
-  <footer>
-    <div class="footer-logo">
-      <img src="logo.png" alt="Логотип проекта">
-    </div>
-    <div class="footer-links">
-   </div>
-    <div class="footer-socials">
-      <a href="https://vk.com/uvn_offical"><img src="images/vk1.svg" alt="VK"></a>
-      <!-- Другие социальные иконки -->
-    </div>
-    <div class="footer-copy">
-      <p>© 2025 Евгений Чертин. Все права защищены.</p>
-    </div>
-  </footer>
-</div>
-  <script src="js/index.js"></script>
+function gradeClassName(n) {
+  if (!n) return "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
+  const normalized = (''+n).trim().toLowerCase();
+  if (normalized === 'неявка' || normalized === 'пропуск') return "bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-200";
+  const num = parseInt(n,10);
+  if (!isFinite(num)) return "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
+  if (num >= 5) return "bg-green-500 text-white";
+  if (num === 4) return "bg-amber-500 text-white";
+  if (num === 3) return "bg-yellow-400 text-black";
+  return "bg-red-500 text-white";
+}
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+}
+
+function renderDaySlide(day) {
+  const slide = document.createElement('div');
+  slide.className = "swiper-slide";
+  const lessonsHtml = day.lessons.map(l=>`
+    <article class="lesson-card p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#0e0e0e] mb-4">
+      <div class="flex justify-between items-start gap-3">
+        <div class="min-w-0">
+          <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">${escapeHtml(l.num_time)}</div>
+          <div class="text-lg font-semibold mb-1">${escapeHtml(l.subject)}</div>
+          <div class="text-sm text-gray-600 dark:text-gray-300 break-words">${escapeHtml(l.theme || '-')}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-2 break-words"><strong>ДЗ:</strong> ${escapeHtml(l.homework || '-')}</div>
+          ${l.note ? `<div class="text-xs text-gray-400 mt-1 break-words">Примечание: ${escapeHtml(l.note)}</div>` : ''}
+        </div>
+        <div class="flex flex-col items-end gap-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400">${escapeHtml(l.grade_type || '')}</div>
+          <div class="grade-badge ${gradeClassName(l.grade)}">${escapeHtml(l.grade || '-')}</div>
+        </div>
+      </div>
+    </article>
+  `).join('');
+  slide.innerHTML = `<div class="day-card"><header class="mb-4"><h2 class="text-2xl font-semibold">${escapeHtml(day.title)}</h2><div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${day.lessons.length} уроков</div></header><div>${lessonsHtml}</div></div>`;
+  return slide;
+}
+
+function renderWeek(weekIndex){
+  const week = weeksData[weekIndex];
+  const daysContainer = document.getElementById('daysContainer');
+  daysContainer.innerHTML = '';
+  week.diaryData.forEach(day=>{
+    daysContainer.appendChild(renderDaySlide(day));
+  });
+  document.getElementById('weekLabel').textContent = `${week.diaryData[0].title.split(' ')[0]}–${week.diaryData[week.diaryData.length-1].title.split(' ')[0]}`;
+  renderDayDots(week.diaryData.length);
+  if(daySwiper) daySwiper.destroy();
+  daySwiper = new Swiper('.daySwiper', {
+    slidesPerView:1,
+    spaceBetween:24,
+    pagination:false,
+    grabCursor:true,
+    allowTouchMove:true,
+    on: {
+      slideChange: ()=>updateDayDots(daySwiper.activeIndex)
+    }
+  });
+}
+
+function renderDayDots(num){
+  const container = document.getElementById('dayDots');
+  container.innerHTML = '';
+  for(let i=0;i<num;i++){
+    const dot = document.createElement('div');
+    dot.className='day-dot'+(i===0?' active':'');
+    dot.addEventListener('click',()=>daySwiper.slideTo(i));
+    container.appendChild(dot);
+  }
+}
+
+function updateDayDots(activeIndex){
+  document.querySelectorAll('.day-dot').forEach((dot,i)=>{
+    dot.classList.toggle('active', i===activeIndex);
+  });
+}
+
+document.getElementById('prevWeek').addEventListener('click',()=>{
+  if(currentWeek>0) { currentWeek--; renderWeek(currentWeek); }
+});
+document.getElementById('nextWeek').addEventListener('click',()=>{
+  if(currentWeek<weeksData.length-1){ currentWeek++; renderWeek(currentWeek); }
+});
+
+// Загрузка внешнего JSON
+fetch('diary_data.json')
+  .then(res=>res.json())
+  .then(data=>{
+    weeksData = [{diaryData:data}]; // можно добавить другие недели
+    renderWeek(0);
+  })
+  .catch(err=>{
+    console.error(err);
+    document.getElementById('loadError').classList.remove('hidden');
+  });
+</script>
 </body>
 </html>
-
